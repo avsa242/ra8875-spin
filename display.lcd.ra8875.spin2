@@ -1,0 +1,529 @@
+{                                                                                                       
+----------------------------------------------------------------------------------------------------
+    Filename:       display.lcd.ra8875.spin2
+    Description:    Driver for the RA8875 TFT LCD controller
+    Author:         Jesse Burt
+    Started:        May 16, 2026
+    Updated:        May 22, 2026
+    Copyright (c) 2026 - See end of file for terms of use.
+----------------------------------------------------------------------------------------------------
+}
+
+con
+
+    ' default I/O configuration
+    CS          = 0
+    SCK         = 1
+    MOSI        = 2
+    MISO        = 3
+    RST         = 4
+    LITE        = 5
+    WAIT        = 6
+    SPI_FREQ    = 1_000_000
+
+
+    MAX_COLOR   = 65535
+
+    REDMASK     = $f800
+    GREENMASK   = $07e0
+    BLUEMASK    = $001f
+
+
+obj
+
+    spi:    "com.spi.10mhz"                     ' SPI engine
+    core:   "core.con.ra8875"                   ' RA8875-specific constants
+
+
+var
+
+    word _disp_width, _disp_height
+
+    word _voffset
+
+    word _bl_pwm_freq
+
+
+    ' display panel timings
+    word _vsync_nondisp, _vsync_start
+    byte _pixclk
+    byte _hsync_start, _hsync_pw, _hsync_finetune, _hsync_nondisp
+    byte _vsync_pw
+
+    byte _CS, _RST, _LITE, _WAIT
+
+
+pub start(): s
+' Start the driver using default I/O settings
+'   Returns:    cog ID+1 of SPI engine on success
+'               false on failure
+    return startx(CS, SCK, MOSI, MISO, SPI_FREQ, RST, LITE, WAIT)
+
+
+pub startx(CS_PIN, SCK_PIN, MOSI_PIN, MISO_PIN, SCK_HZ, RST_PIN, LITE_PIN, WAIT_PIN): s
+' Start the driver using custom I/O settings
+'   CS_PIN:     chip select
+'   SCK_PIN:    SPI serial clock
+'   MOSI_PIN:   SPI master out, slave in
+'   MISO_PIN:   SPI master in, slave out
+'   SCK_HZ:     SPI bus speed
+'   RST_PIN:    reset (optional but recommended; specify outside range 0..63 to ignore)
+'   LITE_PIN:   backlight brightness control pin (optional; specify outside range 0..63 to ignore)
+'   WAIT_PIN:   LCD WAIT pin
+'   Returns:    cog ID+1 of SPI engine on success
+'               false on failure
+    if ( lookdown(CS_PIN: 0..63) and lookdown(SCK_PIN: 0..63) and lookdown(MOSI_PIN: 0..63) and ...
+        lookdown(MISO_PIN: 0..63) and lookdown(WAIT_PIN: 0..63) )
+        _CS := CS_PIN
+        _RST := RST_PIN
+        _LITE := LITE_PIN
+        _WAIT := WAIT_PIN
+        pinh(_CS)
+        pinf(_WAIT)
+
+        s := spi.init(SCK_PIN, MOSI_PIN, MISO_PIN, 3, SCK_HZ) + 1
+
+        reset()
+        'if ( dev_id() == $75 )'xxx unreliable
+            pll_init()
+            writereg(core.SYSR, core.DEPTH_16 | core.MCUIF_8BIT)
+            return
+
+    ' if this point is reached, something above failed
+    ' Double check I/O pin assignments, connections, power
+    ' Lastly - make sure you have at least one free core/cog
+    return false
+
+
+pub preset_adafruit_800x480()
+' Preset:
+'   800x480 (5.0" panel w/resistive touchscreen, Adafruit PN 1596)
+'   1kHz backlight PWM freq
+    _disp_width := 800
+    _disp_height := 480
+    _pixclk := core.PCLK_RISING | core.PCLK_PERIOD_2CLK
+    _hsync_nondisp := 26
+    _hsync_start := 32
+    _hsync_pw := 96
+    _hsync_finetune := 0
+    _vsync_nondisp := 32
+    _vsync_start := 23
+    _vsync_pw := 2
+    _voffset := 0
+
+    _bl_pwm_freq := 1000
+
+    writereg(core.PCSR, _pixclk)
+    waitms(1)
+
+    ' horizontal settings
+    writereg(core.HDWR, (_disp_width / 8) - 1)                      ' H width: (HDWR + 1) * 8 = 480
+    writereg(core.HNDFTR, core.DE_HIGH + _hsync_finetune)
+    writereg(core.HNDR, (_hsync_nondisp - _hsync_finetune - 2) / 8) ' H non-display: HNDR * 8 + HNDFTR + 2 = 10
+    writereg(core.HSTR, _hsync_start / 8 - 1)                       ' Hsync start: (HSTR + 1)*8
+    writereg(core.HPWR, core.HSYNC_POL_LOW + (_hsync_pw / 8 - 1))   ' HSync pulse width = (HPWR+1) * 8
+
+    ' vertical settings
+    writereg(core.VDHR0, (_disp_height - 1 + _voffset) & $ff)
+    writereg(core.VDHR1, (_disp_height - 1 + _voffset) >> 8)
+    writereg(core.VNDR0, _vsync_nondisp - 1)                        ' V non-display period = VNDR + 1
+    writereg(core.VNDR1, _vsync_nondisp >> 8)
+    writereg(core.VSTR0, _vsync_start - 1)                          ' Vsync start position = VSTR + 1
+    writereg(core.VSTR1, _vsync_start >> 8)
+    writereg(core.VPWR, core.VSYNC_POL_LOW + _vsync_pw - 1)         ' Vsync pulse width = VPWR + 1
+
+    ' set active window x
+    writereg(core.HSAW0, 0)                                         ' horizontal start point
+    writereg(core.HSAW1, 0)
+    writereg(core.HEAW0, (_disp_width - 1) & $ff)                   ' horizontal end point
+    writereg(core.HEAW1, (_disp_width - 1) >> 8)
+
+    ' set active window y
+    writereg(core.VSAW0, 0 + _voffset)                              ' vertical start point
+    writereg(core.VSAW1, 0 + _voffset)
+    writereg(core.VEAW0, (_disp_height - 1 + _voffset) & $ff)       ' vertical end point
+    writereg(core.VEAW1, (_disp_height - 1 + _voffset) >> 8)
+
+    ' clear window
+    writereg(core.MCLR, core.MCLR_START | core.MCLR_FULL)
+    waitms(500)
+
+    powered(true)
+    gpiox_state(1)
+    pwm1_config(true, core.PWM1_SYSCLK1024)
+    pwm1_duty(255)
+
+
+pub box(x1, y1, x2, y2, c, f=false)
+' Draw a box
+'   (x1, y1):   start coordinates
+'   (x2, y2):   end coordinates
+'   c:          color
+'   f:          fill box (default: no)
+
+    if ( x2 < x1 )
+        x1, x2 := x2, x1
+    if ( y2 < y1 )
+        y1, y2 := y2, y1
+
+    ' write coordinates
+    writecmd(core.DLHSR0)
+    writedata(x1.byte[0])
+    writecmd(core.DLHSR1)
+    writedata(x1.byte[1] & %11)
+
+    writecmd(core.DLVSR0)
+    writedata(y1.byte[0])
+    writecmd(core.DLVSR1)
+    writedata(y1.byte[1] & %1)
+
+    writecmd(core.DLHER0)
+    writedata(x2.byte[0])
+    writecmd(core.DLHER1)
+    writedata(x2.byte[1] & %11)
+
+    writecmd(core.DLVER0)
+    writedata(y2.byte[0])
+    writecmd(core.DLVER1)
+    writedata(y2.byte[1] & %1)
+
+    ' set color 
+    writecmd(core.FGCR0)
+    writedata( (c & REDMASK) >> 11)
+    writecmd(core.FGCR1)
+    writedata( (c & GREENMASK) >> 5)
+    writecmd(core.FGCR2)
+    writedata(c & BLUEMASK)
+
+    ' draw
+    writecmd(core.DCR)
+    if ( f )
+        writedata( (1 << core.DLSTSS) | (1 << core.FCSTS) | (1 << core.DLSSS) )
+    else
+        writedata( (1 << core.DLSTSS) | (1 << core.DLSSS) )
+
+    ' Wait for the command to finish 
+    waitnot(core.DCR, core.LINESQUTRI_STATUS)
+
+
+pub box_rounded(x1, y1, x2, y2, hr, vr, c, f) | w, h
+' Draw a box with rounded corners
+'   (x1, y1):   start coordinates
+'   (x2, y2):   end coordinates
+'   hr:         corner horizontal radius
+'   vr:         corner vertical radius
+'   c:          color
+'   f:          fill box
+    if ( x2 < x1 )
+        x1, x2 := x2, x1
+    if ( y2 < y1 )
+        y1, y2 := y2, y1
+
+    w := x2-x1
+    h := y2-y1
+
+    hr := hr <# w/2                             ' limit radius to half width/height to avoid
+    vr := vr <# h/2                             '   erratic drawing
+
+    ' write start coordinates
+    writecmd(core.DLHSR0)
+    writedata(x1.byte[0])
+    writecmd(core.DLHSR1)
+    writedata(x1.byte[1] & %11)
+
+    writecmd(core.DLVSR0)
+    writedata(y1.byte[0])
+    writecmd(core.DLVSR1)
+    writedata(y1.byte[1] & %1)
+
+    writecmd(core.DLHER0)
+    writedata(x2.byte[0])
+    writecmd(core.DLHER1)
+    writedata(x2.byte[1] & %11)
+
+    writecmd(core.DLVER0)
+    writedata(y2.byte[0])
+    writecmd(core.DLVER1)
+    writedata(y2.byte[1] & %1)
+
+    ' set radii
+    writecmd(core.ELL_A0)
+    writedata(hr.byte[0])
+    writecmd(core.ELL_A1)
+    writedata( (hr.byte[1] & %11) )
+
+    writecmd(core.ELL_B0)
+    writedata(vr.byte[0])
+    writecmd(core.ELL_B1)
+    writedata( (vr.byte[1] & %1) )
+
+
+    ' set color
+    writecmd(core.FGCR0)
+    writedata( (c & REDMASK) >> 11)
+    writecmd(core.FGCR1)
+    writedata( (c & GREENMASK) >> 5)
+    writecmd(core.FGCR2)
+    writedata(c & BLUEMASK)
+
+    ' draw
+    writecmd(core.DCSCR)
+    if ( f )
+        writedata( core.DRAW_ELL_CIRSQU | core.FILL_ELL_CIRSQU | core.DRAW_CIRSQU)
+    else
+        writedata( core.DRAW_ELL_CIRSQU | core.DRAW_CIRSQU )
+
+    ' wait for the command to finish 
+    waitnot(core.DCSCR, core.ELL_CIRSQU_BUSY)
+
+
+pub brightness(b)
+' Set LCD backlight brightness
+'   b:  percentage (0..100)
+
+    b := (0 #> b <# 100) * 10                   ' clamp range 0..100, scale to usec
+
+    if ( lookdown(_LITE: 0..63) )               ' make sure I/O pin is valid first
+        pinstart(   _LITE, ...
+                    (P_PWM_SAWTOOTH | P_OE), ...            ' PWM smart-pin mode, enable output
+                    ( (1_000_000/_bl_pwm_freq) << 16) | ... ' pulse period
+                    (clkfreq/1_000_000), ...                ' timing granularity (1uS)
+                    b )
+
+
+pub circle(x, y, r, c, f=false)
+' Draw a circle
+'   (x, y):     center coordinates
+'   r:          radius
+'   c:          color
+'   f:          fill the circle (optional; default is no/false)
+
+    ' write coordinates
+    writecmd(core.DCHR0)
+    writedata(x.byte[0])
+    writecmd(core.DCHR1)
+    writedata(x.byte[1] & %11)
+
+    writecmd(core.DCVR0)
+    writedata(y.byte[0])
+    writecmd(core.DCVR1)
+    writedata(y.byte[1] & %1)
+
+    ' write radius
+    writecmd(core.DCRR)
+    writedata(r & $ff)
+
+    ' write color
+    writecmd(core.FGCR0)
+    writedata( (c & REDMASK) >> 11)
+    writecmd(core.FGCR1)
+    writedata( (c & GREENMASK) >> 5)
+    writecmd(core.FGCR2)
+    writedata(c & BLUEMASK)
+
+    ' fill flag: convert any non-zero value to 1
+    f := (f <> 0) ? 1 : 0
+
+    writecmd(core.DCR)
+    writedata( (1 << core.DCSS) | (f << core.FCSTS) )
+
+    ' Wait for the command to finish 
+    waitnot(core.DCR, core.LINESQUTRI_STATUS)
+
+
+pub dev_id(): i
+' Get the device ID from the display controller
+    return readreg(core.DEV_ID)
+
+
+pub powered(p)
+' Enable display power
+'   p:  true (non-zero values): power on
+'       false (0): power off
+
+    if ( p )
+        writereg(core.PWRR, core.DISP_NORMAL | core.DISP_ON)
+    else
+        writereg(core.PWRR, core.DISP_NORMAL | core.DISP_OFF)
+
+
+pub gpiox_state(s)
+' Set extra GPIO state
+    writereg(core.GPIOX, (s <> 0) & 1)
+
+
+pub line(x1, y1, x2, y2, c)
+' Draw a line
+'   (x1, y1):   starting coordinates
+'   (x2, y2):   ending coordinates
+'   c:          color
+    if ( x2 < x1 )
+        x1, x2 := x2, x1
+    if ( y2 < y1 )
+        y1, y2 := y2, y1
+
+    writecmd(core.DLHSR0)
+    writedata(x1.byte[0])
+    writecmd(core.DLHSR1)
+    writedata(x1.byte[1] & %11)
+
+    writecmd(core.DLVSR0)
+    writedata(y1.byte[0])
+    writecmd(core.DLVSR1)
+    writedata(y1.byte[1] & %1)
+
+    writecmd(core.DLHER0)
+    writedata(x2)
+    writecmd(core.DLHER1)
+    writedata(x2.byte[1] & %11)
+
+    writecmd(core.DLVER0)
+    writedata(y2.byte[0])
+    writecmd(core.DLVER1)
+    writedata(y2.byte[1] & %1)
+
+    writecmd(core.FGCR0)
+    writedata( (c & REDMASK) >> 11)
+    writecmd(core.FGCR1)
+    writedata( (c & GREENMASK) >> 5)
+    writecmd(core.FGCR2)
+    writedata(c & BLUEMASK)
+
+    ' Draw! 
+    writecmd(core.DCR)
+    writedata( (1 << core.DLSTSS) )
+
+    ' Wait for the command to finish 
+    waitnot(core.DCR, core.LINESQUTRI_STATUS)
+
+
+pub pll_init()
+' Initialize PLL
+{    if ( _size == RA8875_480x80 or _size == RA8875_480x128 or _size == RA8875_480x272 )
+        writereg(RA8875_PLLC1, RA8875_PLLC1_PLLDIV1 + 10)
+        waitms(1)
+        writereg(RA8875_PLLC2, RA8875_PLLC2_DIV4)
+        waitms(1)
+    else    '(_size == RA8875_800x480)}
+        writereg(core.PLLC1, core.PLLDIVM_DIV1 + 11)
+        waitms(1)
+        writereg(core.PLLC2, core.PLLDIVK_DIV4)
+        waitms(1)
+
+
+pub pwm1_config(e, clk)
+' Configure PWM1 output
+    if ( e )
+        writereg(core.P1CR, core.P1CR_ENABLE | (clk & $f) )
+    else
+        writereg(core.P1CR, core.P1CR_DISABLE | (clk & $f) )
+
+
+pub pwm1_duty(p)
+' Set PWM1 pin duty cycle
+    writereg(core.P1DCR, p)
+
+
+pub reset()
+' Reset th display controller
+    if ( lookdown(_RST: 0..63) )                ' only touch the pin if it was defined at
+        pinl(_RST)                              '   driver startup
+        waitms(100)
+        pinh(_RST)
+        waitms(100)
+
+
+pri busy(): s
+' Check if the display is busy
+    return pinr(_WAIT) == 0
+
+
+pri readdata(): v
+' Read data returned by command
+    repeat
+    while busy()
+    pinl(_CS)
+        spi.wr_byte(core.DATA_READ)
+        v := spi.rd_byte()
+    pinh(_CS)
+    waitus(1)
+
+    return v
+
+
+pri readreg(reg_nr): v
+' Read value from register
+    writecmd(reg_nr)
+    return readdata()
+
+
+pri readstatus(): v
+' Read the status register
+    repeat
+    while busy()
+
+    pinl(_CS)
+        spi.wr_byte(core.CMD_READ)
+        v := spi.rd_byte()
+    pinh(_CS)
+    waitus(1)
+    return v
+
+
+pri waitnot(reg_nr, f): s
+' Wait for a bitfield read from a register to be clear
+    repeat
+        s := readreg(reg_nr) & f
+    while s
+
+
+pri writecmd(c)
+' Write command
+    repeat
+    while busy()
+
+    pinl(_CS)
+        spi.wr_byte(core.CMD_WRITE)
+        spi.wr_byte(c)
+    pinh(_CS)
+    waitus(1)
+
+
+pri writedata(v)
+' Write command parameter or display data
+    repeat
+    while busy()
+
+    pinl(_CS)
+        spi.wr_byte(core.DATA_WRITE)
+        spi.wr_byte(v)
+    pinh(_CS)
+    waitus(1)
+
+
+pri writereg(reg_nr, val)
+' Write value to register
+    writecmd(reg_nr)
+    writedata(val)
+
+
+dat 
+{
+Copyright 2026 Jesse Burt
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT
+OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+}
+

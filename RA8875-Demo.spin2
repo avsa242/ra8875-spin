@@ -1,0 +1,121 @@
+{
+----------------------------------------------------------------------------------------------------
+    Filename:       RA8875-Demo.spin2
+    Description:    Demo of the RA8875 driver
+    Author:         Jesse Burt
+    Started:        May 16, 2026
+    Updated:        May 22, 2026
+    Copyright (c) 2026 - See end of file for terms of use.
+----------------------------------------------------------------------------------------------------
+}
+
+con
+
+    _clkfreq    = 180_000_000
+    _xtlfreq    = 20_000_000
+
+
+obj
+
+    ser:    "com.serial.terminal.ansi"
+    disp:   "display.lcd.ra8875.spin2" | CS=28, SCK=25, MOSI=27, MISO=26, RST=29, WAIT=30, LITE=24, ...
+                                        SPI_FREQ=5_000_000
+
+
+
+pub main() | x1, y1, x2, y2, c
+
+    setup()
+
+    disp.brightness(50)
+
+    repeat
+        x1 := getrnd() +// 800
+        y1 := getrnd() +// 480
+        x2 := getrnd() +// 800
+        y2 := getrnd() +// 480
+        c := getrnd() +// $ffff
+        disp.box(x1, y1, x2, y2, c, true)
+'        disp.box_rounded(x1, y1, x2, y2, getrnd() +// 256, getrnd() +// 256, c, true)
+'        disp.line(x1, y1, x2, y2, c)
+'        disp.circle(x1, y1, getrnd() +// 256, c, false)
+
+    repeat
+        color_bars()
+
+
+pub color_bars() | r, g, b, x
+
+    r := 0
+    repeat 800 with x
+        disp.line(x, 0, x, 59, r << 11)
+        r := x/25
+
+    g := 0
+    repeat 800 with x '797
+        disp.line(x, 60, x, 119, g << 5)
+        g := (x * 1_00) / 12_50 ' x / 12.5
+
+    b := 0
+    repeat 800 with x
+        disp.line(x, 120, x, 179, b)
+        b := x/25
+
+    g := 0
+    b := 0
+    repeat 800 with x   ' 797
+        disp.box(x, 180, x, 239, (g << 5) | b, true)
+        g := (x * 1_00) / 12_50
+        b := x/25
+
+
+    r := 0
+    b := 0
+    repeat 800 with x
+        disp.box(x, 240, x, 299, (r << 11) | b, true)
+        r := x/25
+        b := x/25
+
+    r := 0
+    g := 0
+    repeat 800 with x
+        disp.box(x, 300, x, 359, (r << 11) | (g << 5), true)
+        r := x/25
+        g := (x * 1_00) / 12_50
+
+
+pub setup()
+
+    ser.start()
+    ser.clear()
+
+    ser.strln(@"Serial terminal started")
+
+    if ( disp.start() )
+        ser.strln(@"RA8875 driver started")
+        disp.preset_adafruit_800x480()
+    else
+        ser.strln(@"RA8875 driver failed to start - halting")
+        repeat
+
+
+dat
+{
+Copyright 2026 Jesse Burt
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT
+OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+}
+
