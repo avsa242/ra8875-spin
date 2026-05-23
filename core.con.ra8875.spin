@@ -240,21 +240,36 @@ con
         DTLSSS      = 0
         DRAW_LINE_SQU_TRI   = 1 << DLSTSS
         LINE_SQU_TRI_BUSY   = 1 << DLSTSS
+        DRAW_CIRCLE         = 1 << DCSS
         FILL_CIR_SQU_TRI    = 1 << FCSTS
+        DRAW_SQUARE         = 1 << DLSSS
         DRAW_TRIANGLE       = 1 << DTLSSS
 
     DLHSR0          = $91
+
     DLHSR1          = $92
+    DLHSR1_MASK     = $03
+
     DLVSR0          = $93
     DLVSR1          = $94
+    DLVSR1_MASK     = $01
+
     DLHER0          = $95
     DLHER1          = $96
+    DLHER1_MASK     = $03
+
     DLVER0          = $97
     DLVER1          = $98
+    DLVER1_MASK     = $01
+
     DCHR0           = $99
     DCHR1           = $9a
+    DCHR1_MASK      = $03
+
     DCVR0           = $9b
     DCVR1           = $9c
+    DCVR1_MASK      = $01
+
     DCRR            = $9d
 
     DCSCR           = $a0
@@ -278,10 +293,14 @@ con
     DEHR1           = $a6
     DEVR0           = $a7
     DEVR1           = $a8
+
     DTPH0           = $a9
     DTPH1           = $aa
+    DTPH1_MASK      = $03
+
     DTPV0           = $ab
     DTPV1           = $ac
+    DTPV1_MASK      = $01
 
     SSAR0           = $b0
     SSAR1           = $b1

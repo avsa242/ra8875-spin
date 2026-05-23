@@ -37,11 +37,11 @@ pub main() | x1, y1, x2, y2, x3, y3, c
         x3 := getrnd() +// 800
         y3 := getrnd() +// 480
         c := getrnd() +// $ffff
-'        disp.box(x1, y1, x2, y2, c, true)
+        disp.box(x1, y1, x2, y2, c, true)
 '        disp.box_rounded(x1, y1, x2, y2, getrnd() +// 256, getrnd() +// 256, c, true)
 '        disp.line(x1, y1, x2, y2, c)
 '        disp.circle(x1, y1, getrnd() +// 256, c, true)
-        disp.triangle(x1, y1, x2, y2, x3, y3, c, true)
+'        disp.triangle(x1, y1, x2, y2, x3, y3, c, true)
     repeat
         color_bars()
 

@@ -161,26 +161,8 @@ pub box(x1, y1, x2, y2, c, f=false)
 '   c:          color
 '   f:          fill box (default: no)
 
-    ' write coordinates
-    writecmd(core.DLHSR0)
-    writedata(x1.byte[0])
-    writecmd(core.DLHSR1)
-    writedata(x1.byte[1] & %11)
-
-    writecmd(core.DLVSR0)
-    writedata(y1.byte[0])
-    writecmd(core.DLVSR1)
-    writedata(y1.byte[1] & %1)
-
-    writecmd(core.DLHER0)
-    writedata(x2.byte[0])
-    writecmd(core.DLHER1)
-    writedata(x2.byte[1] & %11)
-
-    writecmd(core.DLVER0)
-    writedata(y2.byte[0])
-    writecmd(core.DLVER1)
-    writedata(y2.byte[1] & %1)
+    ' set coordinates
+    set_xy(x1, y1, x2, y2)
 
     ' set color 
     writecmd(core.FGCR0)
@@ -193,9 +175,9 @@ pub box(x1, y1, x2, y2, c, f=false)
     ' draw
     writecmd(core.DCR)
     if ( f )
-        writedata( (1 << core.DLSTSS) | (1 << core.FCSTS) | (1 << core.DLSSS) )
+        writedata(core.DRAW_LINE_SQU_TRI | core.FILL_CIR_SQU_TRI | core.DRAW_SQUARE)
     else
-        writedata( (1 << core.DLSTSS) | (1 << core.DLSSS) )
+        writedata(core.DRAW_LINE_SQU_TRI | core.DRAW_SQUARE)
 
     ' Wait for the command to finish 
     waitnot(core.DCR, core.LINE_SQU_TRI_BUSY)
@@ -220,28 +202,10 @@ pub box_rounded(x1, y1, x2, y2, hr, vr, c, f) | w, h
     hr := hr <# w/2                             ' limit radius to half width/height to avoid
     vr := vr <# h/2                             '   erratic drawing
 
-    ' write start coordinates
-    writecmd(core.DLHSR0)
-    writedata(x1.byte[0])
-    writecmd(core.DLHSR1)
-    writedata(x1.byte[1] & %11)
+    ' set coordinates
+    set_xy(x1, y1, x2, y2)
 
-    writecmd(core.DLVSR0)
-    writedata(y1.byte[0])
-    writecmd(core.DLVSR1)
-    writedata(y1.byte[1] & %1)
-
-    writecmd(core.DLHER0)
-    writedata(x2.byte[0])
-    writecmd(core.DLHER1)
-    writedata(x2.byte[1] & %11)
-
-    writecmd(core.DLVER0)
-    writedata(y2.byte[0])
-    writecmd(core.DLVER1)
-    writedata(y2.byte[1] & %1)
-
-    ' set radii
+    ' set corners radius
     writecmd(core.ELL_A0)
     writedata(hr.byte[0])
     writecmd(core.ELL_A1)
@@ -251,7 +215,6 @@ pub box_rounded(x1, y1, x2, y2, hr, vr, c, f) | w, h
     writedata(vr.byte[0])
     writecmd(core.ELL_B1)
     writedata( (vr.byte[1] & %1) )
-
 
     ' set color
     writecmd(core.FGCR0)
@@ -264,9 +227,9 @@ pub box_rounded(x1, y1, x2, y2, hr, vr, c, f) | w, h
     ' draw
     writecmd(core.DCSCR)
     if ( f )
-        writedata( core.DRAW_ELL_CIRSQU | core.FILL_ELL_CIRSQU | core.DRAW_CIRSQU)
+        writedata(core.DRAW_ELL_CIRSQU | core.FILL_ELL_CIRSQU | core.DRAW_CIRSQU)
     else
-        writedata( core.DRAW_ELL_CIRSQU | core.DRAW_CIRSQU )
+        writedata(core.DRAW_ELL_CIRSQU | core.DRAW_CIRSQU)
 
     ' wait for the command to finish 
     waitnot(core.DCSCR, core.ELL_CIRSQU_BUSY)
@@ -297,12 +260,12 @@ pub circle(x, y, r, c, f=false)
     writecmd(core.DCHR0)
     writedata(x.byte[0])
     writecmd(core.DCHR1)
-    writedata(x.byte[1] & %11)
+    writedata(x.byte[1] & core.DCHR1_MASK)
 
     writecmd(core.DCVR0)
     writedata(y.byte[0])
     writecmd(core.DCVR1)
-    writedata(y.byte[1] & %1)
+    writedata(y.byte[1] & core.DCVR1_MASK)
 
     ' write radius
     writecmd(core.DCRR)
@@ -320,7 +283,7 @@ pub circle(x, y, r, c, f=false)
     f := (f <> 0) ? 1 : 0
 
     writecmd(core.DCR)
-    writedata( (1 << core.DCSS) | (f << core.FCSTS) )
+    writedata(core.DRAW_CIRCLE | (f << core.FCSTS) )
 
     ' Wait for the command to finish 
     waitnot(core.DCR, core.LINE_SQU_TRI_BUSY)
@@ -352,25 +315,8 @@ pub line(x1, y1, x2, y2, c)
 '   (x1, y1):   starting coordinates
 '   (x2, y2):   ending coordinates
 '   c:          color
-    writecmd(core.DLHSR0)
-    writedata(x1.byte[0])
-    writecmd(core.DLHSR1)
-    writedata(x1.byte[1] & %11)
 
-    writecmd(core.DLVSR0)
-    writedata(y1.byte[0])
-    writecmd(core.DLVSR1)
-    writedata(y1.byte[1] & %1)
-
-    writecmd(core.DLHER0)
-    writedata(x2)
-    writecmd(core.DLHER1)
-    writedata(x2.byte[1] & %11)
-
-    writecmd(core.DLVER0)
-    writedata(y2.byte[0])
-    writecmd(core.DLVER1)
-    writedata(y2.byte[1] & %1)
+    set_xy(x1, y1, x2, y2)
 
     writecmd(core.FGCR0)
     writedata( (c & REDMASK) >> 11)
@@ -379,9 +325,9 @@ pub line(x1, y1, x2, y2, c)
     writecmd(core.FGCR2)
     writedata(c & BLUEMASK)
 
-    ' Draw! 
+    ' draw line
     writecmd(core.DCR)
-    writedata( (1 << core.DLSTSS) )
+    writedata(core.DRAW_LINE_SQU_TRI)
 
     ' Wait for the command to finish 
     waitnot(core.DCR, core.LINE_SQU_TRI_BUSY)
@@ -432,39 +378,19 @@ pub triangle(x1, y1, x2, y2, x3, y3, c, f=false)
 '   f:          fill box (default: no)
 
     ' write coordinates
-    ' point 1
-    writecmd(core.DLHSR0)
-    writedata(x1.byte[0])
-    writecmd(core.DLHSR1)
-    writedata(x1.byte[1] & %11)
-
-    writecmd(core.DLVSR0)
-    writedata(y1.byte[0])
-    writecmd(core.DLVSR1)
-    writedata(y1.byte[1] & %1)
-
-    ' point 2
-    writecmd(core.DLHER0)
-    writedata(x2.byte[0])
-    writecmd(core.DLHER1)
-    writedata(x2.byte[1] & %11)
-
-    writecmd(core.DLVER0)
-    writedata(y2.byte[0])
-    writecmd(core.DLVER1)
-    writedata(y2.byte[1] & %1)
+    ' points 1, 2
+    set_xy(x1, y1, x2, y2)
 
     ' point 3
     writecmd(core.DTPH0)
     writedata(x3.byte[0])
     writecmd(core.DTPH1)
-    writedata(x3.byte[1] & %11)
+    writedata(x3.byte[1] & core.DTPH1_MASK)
 
     writecmd(core.DTPV0)
     writedata(y3.byte[0])
     writecmd(core.DTPV1)
-    writedata(y3.byte[1] & %1)
-
+    writedata(y3.byte[1] & core.DTPV1_MASK)
 
     ' set color
     writecmd(core.FGCR0)
@@ -483,6 +409,34 @@ pub triangle(x1, y1, x2, y2, x3, y3, c, f=false)
 
     ' Wait for the command to finish
     waitnot(core.DCR, core.LINE_SQU_TRI_BUSY)
+
+
+pub set_xy(x1, y1, x2=-1, y2=-1)
+' Set cursor/drawing position
+'   (x1, y1):   point 1/starting coordinates
+'   (x2, y2):   point 2/ending coordinates (optional; ignored if unspecified or if set less than 0)
+    ' write start coordinates
+    writecmd(core.DLHSR0)
+    writedata(x1.byte[0])
+    writecmd(core.DLHSR1)
+    writedata(x1.byte[1] & core.DLHSR1_MASK)
+
+    writecmd(core.DLVSR0)
+    writedata(y1.byte[0])
+    writecmd(core.DLVSR1)
+    writedata(y1.byte[1] & core.DLVSR1_MASK)
+
+    ' write ending coordinates if specified (and valid)
+    if ( (x2 >= 0) and (y2 >= 0) )
+        writecmd(core.DLHER0)
+        writedata(x2.byte[0])
+        writecmd(core.DLHER1)
+        writedata(x2.byte[1] & core.DLHER1_MASK)
+
+        writecmd(core.DLVER0)
+        writedata(y2.byte[0])
+        writecmd(core.DLVER1)
+        writedata(y2.byte[1] & core.DLVER1_MASK)
 
 
 pri busy(): s
