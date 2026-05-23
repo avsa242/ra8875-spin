@@ -279,17 +279,6 @@ pub dev_id(): i
     return readreg(core.DEV_ID)
 
 
-pub powered(p)
-' Enable display power
-'   p:  true (non-zero values): power on
-'       false (0): power off
-
-    if ( p )
-        writereg(core.PWRR, core.DISP_NORMAL | core.DISP_ON)
-    else
-        writereg(core.PWRR, core.DISP_NORMAL | core.DISP_OFF)
-
-
 pub fgcolor(c)
 ' Set foreground color
 
@@ -336,6 +325,17 @@ pub pll_init()
         waitms(1)
         writereg(core.PLLC2, core.PLLDIVK_DIV4)
         waitms(1)
+
+
+pub powered(p)
+' Enable display power
+'   p:  true (non-zero values): power on
+'       false (0): power off
+
+    if ( p )
+        writereg(core.PWRR, core.DISP_NORMAL | core.DISP_ON)
+    else
+        writereg(core.PWRR, core.DISP_NORMAL | core.DISP_OFF)
 
 
 pub pwm1_config(e, clk)
