@@ -280,8 +280,7 @@ pub dev_id(): i
 
 
 pub fgcolor(c)
-' Set foreground color
-
+' Set foreground color of subsequent drawing operations
     writecmd(core.FGCR0)
     writedata( (c & REDMASK) >> 11)
     writecmd(core.FGCR1)
@@ -360,6 +359,34 @@ pub reset()
         waitms(100)
 
 
+pub set_xy(x1, y1, x2=-1, y2=-1)
+' Set cursor/drawing position
+'   (x1, y1):   point 1/starting coordinates
+'   (x2, y2):   point 2/ending coordinates (optional; ignored if unspecified or if set less than 0)
+    ' write start coordinates
+    writecmd(core.DLHSR0)
+    writedata(x1.byte[0])
+    writecmd(core.DLHSR1)
+    writedata(x1.byte[1] & core.DLHSR1_MASK)
+
+    writecmd(core.DLVSR0)
+    writedata(y1.byte[0])
+    writecmd(core.DLVSR1)
+    writedata(y1.byte[1] & core.DLVSR1_MASK)
+
+    ' write ending coordinates if specified (and valid)
+    if ( (x2 >= 0) and (y2 >= 0) )
+        writecmd(core.DLHER0)
+        writedata(x2.byte[0])
+        writecmd(core.DLHER1)
+        writedata(x2.byte[1] & core.DLHER1_MASK)
+
+        writecmd(core.DLVER0)
+        writedata(y2.byte[0])
+        writecmd(core.DLVER1)
+        writedata(y2.byte[1] & core.DLVER1_MASK)
+
+
 pub triangle(x1, y1, x2, y2, x3, y3, c, f=false)
 ' Draw a triangle
 '   (x1, y1):   point 1 coordinates
@@ -396,33 +423,6 @@ pub triangle(x1, y1, x2, y2, x3, y3, c, f=false)
     ' Wait for the command to finish
     waitnot(core.DCR, core.LINE_SQU_TRI_BUSY)
 
-
-pub set_xy(x1, y1, x2=-1, y2=-1)
-' Set cursor/drawing position
-'   (x1, y1):   point 1/starting coordinates
-'   (x2, y2):   point 2/ending coordinates (optional; ignored if unspecified or if set less than 0)
-    ' write start coordinates
-    writecmd(core.DLHSR0)
-    writedata(x1.byte[0])
-    writecmd(core.DLHSR1)
-    writedata(x1.byte[1] & core.DLHSR1_MASK)
-
-    writecmd(core.DLVSR0)
-    writedata(y1.byte[0])
-    writecmd(core.DLVSR1)
-    writedata(y1.byte[1] & core.DLVSR1_MASK)
-
-    ' write ending coordinates if specified (and valid)
-    if ( (x2 >= 0) and (y2 >= 0) )
-        writecmd(core.DLHER0)
-        writedata(x2.byte[0])
-        writecmd(core.DLHER1)
-        writedata(x2.byte[1] & core.DLHER1_MASK)
-
-        writecmd(core.DLVER0)
-        writedata(y2.byte[0])
-        writecmd(core.DLVER1)
-        writedata(y2.byte[1] & core.DLVER1_MASK)
 
 
 pri busy(): s
