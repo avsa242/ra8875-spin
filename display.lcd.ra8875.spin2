@@ -4,7 +4,7 @@
     Description:    Driver for the RA8875 TFT LCD controller
     Author:         Jesse Burt
     Started:        May 16, 2026
-    Updated:        May 22, 2026
+    Updated:        May 23, 2026
     Copyright (c) 2026 - See end of file for terms of use.
 ----------------------------------------------------------------------------------------------------
 }
@@ -160,11 +160,6 @@ pub box(x1, y1, x2, y2, c, f=false)
 '   (x2, y2):   end coordinates
 '   c:          color
 '   f:          fill box (default: no)
-
-    if ( x2 < x1 )
-        x1, x2 := x2, x1
-    if ( y2 < y1 )
-        y1, y2 := y2, y1
 
     ' write coordinates
     writecmd(core.DLHSR0)
@@ -357,11 +352,6 @@ pub line(x1, y1, x2, y2, c)
 '   (x1, y1):   starting coordinates
 '   (x2, y2):   ending coordinates
 '   c:          color
-    if ( x2 < x1 )
-        x1, x2 := x2, x1
-    if ( y2 < y1 )
-        y1, y2 := y2, y1
-
     writecmd(core.DLHSR0)
     writedata(x1.byte[0])
     writecmd(core.DLHSR1)
