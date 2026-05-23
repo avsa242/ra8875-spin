@@ -198,7 +198,7 @@ pub box(x1, y1, x2, y2, c, f=false)
         writedata( (1 << core.DLSTSS) | (1 << core.DLSSS) )
 
     ' Wait for the command to finish 
-    waitnot(core.DCR, core.LINESQUTRI_STATUS)
+    waitnot(core.DCR, core.LINE_SQU_TRI_BUSY)
 
 
 pub box_rounded(x1, y1, x2, y2, hr, vr, c, f) | w, h
@@ -323,7 +323,7 @@ pub circle(x, y, r, c, f=false)
     writedata( (1 << core.DCSS) | (f << core.FCSTS) )
 
     ' Wait for the command to finish 
-    waitnot(core.DCR, core.LINESQUTRI_STATUS)
+    waitnot(core.DCR, core.LINE_SQU_TRI_BUSY)
 
 
 pub dev_id(): i
@@ -384,7 +384,7 @@ pub line(x1, y1, x2, y2, c)
     writedata( (1 << core.DLSTSS) )
 
     ' Wait for the command to finish 
-    waitnot(core.DCR, core.LINESQUTRI_STATUS)
+    waitnot(core.DCR, core.LINE_SQU_TRI_BUSY)
 
 
 pub pll_init()
@@ -421,6 +421,68 @@ pub reset()
         waitms(100)
         pinh(_RST)
         waitms(100)
+
+
+pub triangle(x1, y1, x2, y2, x3, y3, c, f=false)
+' Draw a triangle
+'   (x1, y1):   point 1 coordinates
+'   (x2, y2):   point 2 coordinates
+'   (x3, y3):   point 3 coordinates
+'   c:          color
+'   f:          fill box (default: no)
+
+    ' write coordinates
+    ' point 1
+    writecmd(core.DLHSR0)
+    writedata(x1.byte[0])
+    writecmd(core.DLHSR1)
+    writedata(x1.byte[1] & %11)
+
+    writecmd(core.DLVSR0)
+    writedata(y1.byte[0])
+    writecmd(core.DLVSR1)
+    writedata(y1.byte[1] & %1)
+
+    ' point 2
+    writecmd(core.DLHER0)
+    writedata(x2.byte[0])
+    writecmd(core.DLHER1)
+    writedata(x2.byte[1] & %11)
+
+    writecmd(core.DLVER0)
+    writedata(y2.byte[0])
+    writecmd(core.DLVER1)
+    writedata(y2.byte[1] & %1)
+
+    ' point 3
+    writecmd(core.DTPH0)
+    writedata(x3.byte[0])
+    writecmd(core.DTPH1)
+    writedata(x3.byte[1] & %11)
+
+    writecmd(core.DTPV0)
+    writedata(y3.byte[0])
+    writecmd(core.DTPV1)
+    writedata(y3.byte[1] & %1)
+
+
+    ' set color
+    writecmd(core.FGCR0)
+    writedata( (c & REDMASK) >> 11)
+    writecmd(core.FGCR1)
+    writedata( (c & GREENMASK) >> 5)
+    writecmd(core.FGCR2)
+    writedata(c & BLUEMASK)
+
+    ' draw
+    writecmd(core.DCR)
+    if ( f )
+        writedata( core.DRAW_LINE_SQU_TRI | core.FILL_CIR_SQU_TRI | core.DRAW_TRIANGLE)
+    else
+        writedata( core.DRAW_LINE_SQU_TRI | core.DRAW_TRIANGLE)
+
+    ' Wait for the command to finish
+    waitnot(core.DCR, core.LINE_SQU_TRI_BUSY)
 
 
 pri busy(): s

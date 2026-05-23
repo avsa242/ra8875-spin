@@ -4,7 +4,7 @@
     Description:    RA8875-specific constants
     Author:         Jesse Burt
     Started:        May 16, 2026
-    Updated:        May 22, 2026
+    Updated:        May 23, 2026
     Copyright (c) 2026 - See end of file for terms of use.
 ----------------------------------------------------------------------------------------------------
 }
@@ -238,7 +238,10 @@ con
         FCSTS       = 5
         DLSSS       = 4
         DTLSSS      = 0
-        LINESQUTRI_STATUS   = 1 << DLSTSS
+        DRAW_LINE_SQU_TRI   = 1 << DLSTSS
+        LINE_SQU_TRI_BUSY   = 1 << DLSTSS
+        FILL_CIR_SQU_TRI    = 1 << FCSTS
+        DRAW_TRIANGLE       = 1 << DTLSSS
 
     DLHSR0          = $91
     DLHSR1          = $92

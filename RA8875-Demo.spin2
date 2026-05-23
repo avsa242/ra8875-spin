@@ -4,7 +4,7 @@
     Description:    Demo of the RA8875 driver
     Author:         Jesse Burt
     Started:        May 16, 2026
-    Updated:        May 22, 2026
+    Updated:        May 23, 2026
     Copyright (c) 2026 - See end of file for terms of use.
 ----------------------------------------------------------------------------------------------------
 }
@@ -23,7 +23,7 @@ obj
 
 
 
-pub main() | x1, y1, x2, y2, c
+pub main() | x1, y1, x2, y2, x3, y3, c
 
     setup()
 
@@ -34,12 +34,14 @@ pub main() | x1, y1, x2, y2, c
         y1 := getrnd() +// 480
         x2 := getrnd() +// 800
         y2 := getrnd() +// 480
+        x3 := getrnd() +// 800
+        y3 := getrnd() +// 480
         c := getrnd() +// $ffff
-        disp.box(x1, y1, x2, y2, c, true)
+'        disp.box(x1, y1, x2, y2, c, true)
 '        disp.box_rounded(x1, y1, x2, y2, getrnd() +// 256, getrnd() +// 256, c, true)
 '        disp.line(x1, y1, x2, y2, c)
-'        disp.circle(x1, y1, getrnd() +// 256, c, false)
-
+'        disp.circle(x1, y1, getrnd() +// 256, c, true)
+        disp.triangle(x1, y1, x2, y2, x3, y3, c, true)
     repeat
         color_bars()
 
