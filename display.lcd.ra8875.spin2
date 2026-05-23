@@ -165,12 +165,7 @@ pub box(x1, y1, x2, y2, c, f=false)
     set_xy(x1, y1, x2, y2)
 
     ' set color 
-    writecmd(core.FGCR0)
-    writedata( (c & REDMASK) >> 11)
-    writecmd(core.FGCR1)
-    writedata( (c & GREENMASK) >> 5)
-    writecmd(core.FGCR2)
-    writedata(c & BLUEMASK)
+    fgcolor(c)
 
     ' draw
     writecmd(core.DCR)
@@ -217,12 +212,7 @@ pub box_rounded(x1, y1, x2, y2, hr, vr, c, f) | w, h
     writedata( (vr.byte[1] & %1) )
 
     ' set color
-    writecmd(core.FGCR0)
-    writedata( (c & REDMASK) >> 11)
-    writecmd(core.FGCR1)
-    writedata( (c & GREENMASK) >> 5)
-    writecmd(core.FGCR2)
-    writedata(c & BLUEMASK)
+    fgcolor(c)
 
     ' draw
     writecmd(core.DCSCR)
@@ -256,7 +246,7 @@ pub circle(x, y, r, c, f=false)
 '   c:          color
 '   f:          fill the circle (optional; default is no/false)
 
-    ' write coordinates
+    ' set coordinates
     writecmd(core.DCHR0)
     writedata(x.byte[0])
     writecmd(core.DCHR1)
@@ -267,17 +257,12 @@ pub circle(x, y, r, c, f=false)
     writecmd(core.DCVR1)
     writedata(y.byte[1] & core.DCVR1_MASK)
 
-    ' write radius
+    ' set radius
     writecmd(core.DCRR)
     writedata(r & $ff)
 
-    ' write color
-    writecmd(core.FGCR0)
-    writedata( (c & REDMASK) >> 11)
-    writecmd(core.FGCR1)
-    writedata( (c & GREENMASK) >> 5)
-    writecmd(core.FGCR2)
-    writedata(c & BLUEMASK)
+    ' set color
+    fgcolor(c)
 
     ' fill flag: convert any non-zero value to 1
     f := (f <> 0) ? 1 : 0
@@ -305,6 +290,17 @@ pub powered(p)
         writereg(core.PWRR, core.DISP_NORMAL | core.DISP_OFF)
 
 
+pub fgcolor(c)
+' Set foreground color
+
+    writecmd(core.FGCR0)
+    writedata( (c & REDMASK) >> 11)
+    writecmd(core.FGCR1)
+    writedata( (c & GREENMASK) >> 5)
+    writecmd(core.FGCR2)
+    writedata(c & BLUEMASK)
+
+
 pub gpiox_state(s)
 ' Set extra GPIO state
     writereg(core.GPIOX, (s <> 0) & 1)
@@ -318,12 +314,7 @@ pub line(x1, y1, x2, y2, c)
 
     set_xy(x1, y1, x2, y2)
 
-    writecmd(core.FGCR0)
-    writedata( (c & REDMASK) >> 11)
-    writecmd(core.FGCR1)
-    writedata( (c & GREENMASK) >> 5)
-    writecmd(core.FGCR2)
-    writedata(c & BLUEMASK)
+    fgcolor(c)
 
     ' draw line
     writecmd(core.DCR)
@@ -377,7 +368,7 @@ pub triangle(x1, y1, x2, y2, x3, y3, c, f=false)
 '   c:          color
 '   f:          fill box (default: no)
 
-    ' write coordinates
+    ' set coordinates
     ' points 1, 2
     set_xy(x1, y1, x2, y2)
 
@@ -393,12 +384,7 @@ pub triangle(x1, y1, x2, y2, x3, y3, c, f=false)
     writedata(y3.byte[1] & core.DTPV1_MASK)
 
     ' set color
-    writecmd(core.FGCR0)
-    writedata( (c & REDMASK) >> 11)
-    writecmd(core.FGCR1)
-    writedata( (c & GREENMASK) >> 5)
-    writecmd(core.FGCR2)
-    writedata(c & BLUEMASK)
+    fgcolor(c)
 
     ' draw
     writecmd(core.DCR)
