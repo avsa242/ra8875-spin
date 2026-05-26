@@ -4,7 +4,7 @@
     Description:    Driver for the RA8875 TFT LCD controller
     Author:         Jesse Burt
     Started:        May 16, 2026
-    Updated:        May 23, 2026
+    Updated:        May 26, 2026
     Copyright (c) 2026 - See end of file for terms of use.
 ----------------------------------------------------------------------------------------------------
 }
@@ -23,6 +23,20 @@ con
 
 
     MAX_COLOR   = 65535
+
+
+    OPMODE_GFX          = 0
+    OPMODE_TEXT         = core.TEXT_MODE        ' $80
+
+    FONT_ROM            = 0
+    FONT_RAM            = core.FONT_RAM         ' $80
+
+    ' ROM (built-in) font encodings
+    FONT_ENC_ISO8859_1  = %00
+    FONT_ENC_ISO8859_2  = %01
+    FONT_ENC_ISO8859_3  = %10
+    FONT_ENC_ISO8859_4  = %11
+
 
     REDMASK     = $f800
     GREENMASK   = $07e0
@@ -289,6 +303,23 @@ pub fgcolor(c)
     writedata(c & BLUEMASK)
 
 
+pub font_encoding(e): c
+' Set font encoding for text
+'   e:
+'       FONT_ENC_ISO8859_1 (0): ISO 8859-1 (Latin-1/Western-European languages)
+'       FONT_ENC_ISO8859_2 (1): ISO 8859-2 (Latin-2/Eastern-European languages)
+'       FONT_ENC_ISO8859_3 (2): ISO 8859-3 (Latin-3/South-European languages)
+'       FONT_ENC_ISO8859_4 (3): ISO 8859-4 (Latin-4/North-European languages)
+'       other values:           return the current setting
+    c := readreg(core.FNCR0)
+    case e
+        FONT_ENC_ISO8859_1..FONT_ENC_ISO8859_4:
+            e := (c & core.CGROM_FONT_ENC_MASK) | e
+            writereg(core.FNCR0, e)
+        other:
+            return (e & core.CGROM_FONT_ENC_BITS)
+
+
 pub gpiox_state(s)
 ' Set extra GPIO state
     writereg(core.GPIOX, (s <> 0) & 1)
@@ -312,6 +343,22 @@ pub line(x1, y1, x2, y2, c)
     waitnot(core.DCR, core.LINE_SQU_TRI_BUSY)
 
 
+pub opmode(m): c
+' Set display operating mode
+'   m:
+'       OPMODE_GFX (0):     graphics
+'       OPMODE_TEXT ($80):  text
+'       other values:       return the current setting
+
+    c := readreg(core.MWCR0)
+    case m
+        OPMODE_GFX, OPMODE_TEXT:
+            m := (c & core.TME_MASK) | m
+            writereg(core.MWCR0, m)
+        other:
+            return (c & core.TME_BIT)
+
+
 pub pll_init()
 ' Initialize PLL
 {    if ( _size == RA8875_480x80 or _size == RA8875_480x128 or _size == RA8875_480x272 )
@@ -326,6 +373,19 @@ pub pll_init()
         waitms(1)
 
 
+pub pos_xy(x, y)
+' Set text cursor
+'   (x, y) coordinates (pixel-level)
+    writecmd(core.F_CURXL)
+    writedata(x & $ff)
+    writecmd(core.F_CURXH)
+    writedata(x >> 8)
+    writecmd(core.F_CURYL)
+    writedata(y & $ff)
+    writecmd(core.F_CURYH)
+    writedata(y >> 8)
+
+
 pub powered(p)
 ' Enable display power
 '   p:  true (non-zero values): power on
@@ -335,6 +395,18 @@ pub powered(p)
         writereg(core.PWRR, core.DISP_NORMAL | core.DISP_ON)
     else
         writereg(core.PWRR, core.DISP_NORMAL | core.DISP_OFF)
+
+
+pub puts(p_str) | l, p  'xxx api tentative
+' Draw a string on the display
+    l := strsize(p_str)
+    if ( l )
+        writecmd(core.MRWC)
+        p := p_str
+        repeat l
+            writedata(byte[p++])
+
+    return
 
 
 pub pwm1_config(e, clk)
@@ -357,6 +429,21 @@ pub reset()
         waitms(100)
         pinh(_RST)
         waitms(100)
+
+
+pub set_font(f) | tmp
+' Set font
+'   FONT_ROM (0):   built-in ROM font
+'   FONT_RAM ($80): RAM font (not yet implemented)
+    tmp := readreg(core.FNCR0)
+    case f
+        FONT_ROM, FONT_RAM:
+            f := (tmp & core.CGROM_FONT_MASK) | f   ' clear CGRAM_ROM_FONT and CGROM_INT_EXT
+            writecmd(core.FNCR0)
+            writedata(f)
+            ifnot ( f & core.CGROM_INT_EXT_BIT )
+                writecmd(core.F_SFRS)
+                writedata($00)
 
 
 pub set_xy(x1, y1, x2=-1, y2=-1)
@@ -422,7 +509,6 @@ pub triangle(x1, y1, x2, y2, x3, y3, c, f=false)
 
     ' Wait for the command to finish
     waitnot(core.DCR, core.LINE_SQU_TRI_BUSY)
-
 
 
 pri busy(): s

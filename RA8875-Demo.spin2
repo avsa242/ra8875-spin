@@ -4,7 +4,7 @@
     Description:    Demo of the RA8875 driver
     Author:         Jesse Burt
     Started:        May 16, 2026
-    Updated:        May 23, 2026
+    Updated:        May 26, 2026
     Copyright (c) 2026 - See end of file for terms of use.
 ----------------------------------------------------------------------------------------------------
 }
@@ -22,12 +22,24 @@ obj
                                         SPI_FREQ=5_000_000
 
 
+dat
 
-pub main() | x1, y1, x2, y2, x3, y3, c
+    tstr byte   "This is a test", 0             ' for the text demo
+
+
+pub main()
 
     setup()
 
     disp.brightness(50)
+
+    text()
+'    random_shapes()
+'    color_bars()
+    repeat
+
+
+pub random_shapes() | x1, y1, x2, y2, x3, y3, c
 
     repeat
         x1 := getrnd() +// 800
@@ -42,8 +54,16 @@ pub main() | x1, y1, x2, y2, x3, y3, c
 '        disp.line(x1, y1, x2, y2, c)
 '        disp.circle(x1, y1, getrnd() +// 256, c, true)
 '        disp.triangle(x1, y1, x2, y2, x3, y3, c, true)
-    repeat
-        color_bars()
+
+
+pub text()
+
+    disp.opmode(disp.OPMODE_TEXT)
+    disp.set_font(disp.FONT_ROM)
+    disp.font_encoding(disp.FONT_ENC_ISO8859_1)
+    disp.fgcolor($ffff)
+    disp.pos_xy(10, 10)
+    disp.puts(@tstr)
 
 
 pub color_bars() | r, g, b, x

@@ -90,7 +90,24 @@ con
         VSYNC_POL_HIGH  = 1 << VSYNC_POL
 
     DPCR            = $20
-    FNCR0           = $21
+
+    FNCR0                   = $21
+    FNCR0_REGMASK           = $a3
+        CGRAM_ROM_FONT      = 7
+        CGROM_INT_EXT       = 5
+        CGROM_FONT_ENC      = 0
+        CGROM_FONT_ENC_BITS = %11
+        CGRAM_ROM_FONT_MASK = (1 << CGRAM_ROM_FONT) ^ FNCR0_REGMASK
+        CGROM_INT_EXT_MASK  = (1 << CGROM_INT_EXT) ^ FNCR0_REGMASK
+        CGROM_INT_EXT_BIT   = (1 << CGROM_INT_EXT)
+        CGROM_FONT_MASK     = ((1 << CGRAM_ROM_FONT) | (1 << CGROM_INT_EXT)) ^ FNCR0_REGMASK
+        CGROM_FONT_ENC_MASK = CGROM_FONT_ENC_BITS ^ FNCR0_REGMASK
+        FONT_RAM            = (1 << CGRAM_ROM_FONT)
+        FONT_ENC_ISO8859_1  = %00
+        FONT_ENC_ISO8859_2  = %01
+        FONT_ENC_ISO8859_3  = %10
+        FONT_ENC_ISO8859_4  = %11
+
     FNCR1           = $22
     CGSR            = $23
     HOFS0           = $24
@@ -123,7 +140,19 @@ con
     VESW1           = $3f
 
     MWCR0           = $40
+    MWCR0_REGMASK   = $ef
+        TME         = 7
+        FWC_MWCE    = 6
+        FWC_MWCBE   = 5
+        MWD         = 2
+        MWCAID      = 1
+        MRCAID      = 0
+        TME_BIT     = (1 << TME)
+        TME_MASK    = (1 << TME) ^ MWCR0_REGMASK
+        TEXT_MODE   = 1 << TME
+
     MWCR1           = $41
+
     BTCR            = $44
     MRCD            = $45
     CURH0           = $46
