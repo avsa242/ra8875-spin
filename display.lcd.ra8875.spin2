@@ -293,6 +293,32 @@ pub dev_id(): i
     return readreg(core.DEV_ID)
 
 
+pub draw_area(sx, sy, ex, ey)
+' Set drawable area of the display
+'   (sx, sy):   upper-left corner of active window
+'   (ex, ey):   lower-right corner of active window
+
+    ' sx, sy
+    writecmd(core.HSAW0)
+    writedata(sx.byte[0])
+    writecmd(core.HSAW1)
+    writedata(sx.byte[1] & %11)
+    writecmd(core.VSAW0)
+    writedata(sy.byte[0])
+    writecmd(core.VSAW1)
+    writedata(sy.byte[1] & %1)
+
+    ' ex, ey
+    writecmd(core.HEAW0)
+    writedata(ex.byte[0])
+    writecmd(core.HEAW1)
+    writedata(ex.byte[1] & %11)
+    writecmd(core.VEAW0)
+    writedata(ey.byte[0])
+    writecmd(core.VEAW1)
+    writedata(ey.byte[1] & %1)
+
+
 pub fgcolor(c)
 ' Set foreground color of subsequent drawing operations
     writecmd(core.FGCR0)
