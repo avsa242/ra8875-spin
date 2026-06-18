@@ -4,7 +4,7 @@
     Description:    Driver for the RA8875 TFT LCD controller
     Author:         Jesse Burt
     Started:        May 16, 2026
-    Updated:        May 26, 2026
+    Updated:        Jun 18, 2026
     Copyright (c) 2026 - See end of file for terms of use.
 ----------------------------------------------------------------------------------------------------
 }
@@ -320,6 +320,17 @@ pub font_encoding(e): c
             return (e & core.CGROM_FONT_ENC_BITS)
 
 
+pub font_scl(x, y) | tmp
+' Set font rendering scale factor
+'   x, y: 1..4 (clamped to range)
+    x := (x #> 1 <# 4)-1                        ' scale to reg values
+    y := (y #> 1 <# 4)-1
+
+    tmp := readreg(core.FNCR1) & core.FONT_SCALE_MASK
+    tmp |= (x << core.FONT_HSCALE) | y
+    writereg(core.FNCR1, tmp)
+
+
 pub gpiox_state(s)
 ' Set extra GPIO state
     writereg(core.GPIOX, (s <> 0) & 1)
@@ -397,7 +408,14 @@ pub powered(p)
         writereg(core.PWRR, core.DISP_NORMAL | core.DISP_OFF)
 
 
-pub puts(p_str) | l, p  'xxx api tentative
+pub putchar(c)
+' Draw a single character on the display
+'   NOTE: control codes glyph will be drawn, the codes will not be processed/interpreted
+    writecmd(core.MRWC)
+    writedata(c)
+
+
+pub puts_fast(p_str) | l, p  'xxx api tentative
 ' Draw a string on the display
     l := strsize(p_str)
     if ( l )
@@ -583,6 +601,9 @@ pri writereg(reg_nr, val)
 ' Write value to register
     writecmd(reg_nr)
     writedata(val)
+
+
+#include "terminal.common.spin2h"
 
 
 dat 

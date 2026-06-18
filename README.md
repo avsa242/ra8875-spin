@@ -9,6 +9,17 @@ This is a P8X32A/Propeller, P2X8C4M64P/Propeller 2 driver object for the RAiO RA
 ## Salient Features
 
 * SPI connection at up to 20MHz (P2)
+* Drawing primitives: box, box w/rounded corners, circle, line, triangle
+* Set foreground color
+* Set drawing position
+* Text rendering:
+    * standard terminal i/o api integration (no control codes support)
+    * strings (faster than standard terminal puts(), but non-standard api)
+    * built-in ROM font
+    * font encoding (ISO-8859-1, -2, -3, -4)
+    * font scaling (H, V independent at 1..4x)
+    * pixel-level cursor control
+* Backlight brightness control
 
 
 ## Requirements
@@ -18,6 +29,7 @@ P1/SPIN1:
 
 P2/SPIN2:
 * p2-spin-standard-library
+* terminal.common.spin2h (provided by the above)
 
 
 ## Compiler Compatibility

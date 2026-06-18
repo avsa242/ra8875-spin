@@ -108,7 +108,21 @@ con
         FONT_ENC_ISO8859_3  = %10
         FONT_ENC_ISO8859_4  = %11
 
-    FNCR1           = $22
+    FNCR1                   = $22
+    FNCR1_REGMASK           = $df
+        FULL_ALIGN          = 7
+        FONT_TRANSP         = 6
+        FONT_ROTATE         = 4
+        FONT_HSCALE         = 2
+        FONT_VSCALE         = 0
+        FONT_SCALE          = 0
+        FONT_HSCALE_BITS    = %11
+        FONT_VSCALE_BITS    = %11
+        FONT_SCALE_BITS     = %1111
+        FONT_HSCALE_MASK    = (FONT_HSCALE_BITS << FONT_HSCALE) ^ FNCR1_REGMASK
+        FONT_VSCALE_MASK    = (FONT_VSCALE_BITS << FONT_VSCALE) ^ FNCR1_REGMASK
+        FONT_SCALE_MASK     = (FONT_SCALE_BITS << FONT_SCALE) ^ FNCR1_REGMASK
+
     CGSR            = $23
     HOFS0           = $24
     HOFS1           = $25
