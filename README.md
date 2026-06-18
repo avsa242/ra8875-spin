@@ -21,6 +21,7 @@ This is a P8X32A/Propeller, P2X8C4M64P/Propeller 2 driver object for the RAiO RA
     * pixel-level cursor control
 * Windowing:
     * set drawable area
+    * horizontal/vertical scroll
 * Backlight brightness control
 
 

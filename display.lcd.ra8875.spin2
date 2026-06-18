@@ -475,6 +475,26 @@ pub reset()
         waitms(100)
 
 
+pub scroll_left(px)
+' Scroll a region of the display left
+'   px:     number of pixels to scroll
+'   NOTE: The area of the screen to scroll must first be defined with set_scroll_area()
+    writecmd(core.HOFS0)
+    writedata(px.byte[0])
+    writecmd(core.HOFS1)
+    writedata(px.byte[1] & %11)
+
+
+pub scroll_up(px)
+' Scroll a region of the display left
+'   px:     number of pixels to scroll
+'   NOTE: The area of the screen to scroll must first be defined with set_scroll_area()
+    writecmd(core.VOFS0)
+    writedata(px.byte[0])
+    writecmd(core.VOFS1)
+    writedata(px.byte[1] & %1)
+
+
 pub set_font(f) | tmp
 ' Set font
 '   FONT_ROM (0):   built-in ROM font
@@ -488,6 +508,33 @@ pub set_font(f) | tmp
             ifnot ( f & core.CGROM_INT_EXT_BIT )
                 writecmd(core.F_SFRS)
                 writedata($00)
+
+
+pub set_scroll_area(sx, sy, ex, ey)
+' Set scroll area of the display
+'   (sx, sy):   upper-left corner of scroll area
+'   (ex, ey):   lower-right corner of scroll area
+
+    ' sx, sy
+    writecmd(core.HSSW0)
+    writedata(sx.byte[0])
+    writecmd(core.HSSW1)
+    writedata(sx.byte[1] & %11)
+    writecmd(core.VSSW0)
+    writedata(sy.byte[0])
+    writecmd(core.VSSW1)
+    writedata(sy.byte[1] & %1)
+
+    ' ex, ey
+    writecmd(core.HESW0)
+    writedata(ex.byte[0])
+    writecmd(core.HESW1)
+    writedata(ex.byte[1] & %11)
+    writecmd(core.VESW0)
+    writedata(ey.byte[0])
+    writecmd(core.VESW1)
+    writedata(ey.byte[1] & %1)
+
 
 
 pub set_xy(x1, y1, x2=-1, y2=-1)
