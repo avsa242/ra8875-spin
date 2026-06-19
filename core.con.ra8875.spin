@@ -217,11 +217,41 @@ con
     BGTR1           = $68
     BGTR2           = $69
 
-    TPCR0           = $70
+    TPCR0               = $70
+    TPCR0_REGMASK       = $ff
+        TPEN            = 7
+        TPSTA           = 4
+        TPWE            = 3
+        TPADCCLK        = 0
+        TPSTA_BITS      = %111
+        TPADCCLK_BITS   = %111
+        TPEN_MASK       = (1 << TPEN) ^ TPCR0_REGMASK
+        TPSTA_MASK      = (TPSTA_BITS << TPSTA) ^ TPCR0_REGMASK
+        TPWE_MASK       = (1 << TPWE) ^ TPCR0_REGMASK
+        TPADCCLK_MASK   = TPADCCLK_BITS ^ TPCR0_REGMASK
+
     TPCR1           = $71
+    TPCR1_REGMASK   = $67
+        TPMME       = 6
+        TPARVS      = 5
+        TPDCETPI    = 2
+        TPMSMM      = 0
+        TPMME_MASK  = (1 << TPMME) ^ TPCR1_REGMASK
+        TPARVS_MASK = (1 << TPARVS) ^ TPCR1_REGMASK
+        TPDCETPI_MASK   = (1 << TPDCETPI) ^ TPCR1_REGMASK
+        TPMSMM_BITS     = %11
+        TPMSMM_MASK     = TPMSMM_BITS ^ TPCR1_REGMASK
+
     TPXH            = $72
     TPYH            = $73
     TPXYL           = $74
+        ADET        = 7
+        TOUCHED     = 0 << ADET
+        TPYLSB      = 2
+        TPXLSB      = 0
+        TPYLSB_BITS = %11
+        TPXLSB_BITS = %11
+
 
     GCHP0           = $80
     GCHP1           = $81
@@ -392,7 +422,10 @@ con
     SACS_DATA       = $e2
 
     INTC1           = $f0
+    INTC1_REGMASK   = $1f
+
     INTC2           = $f1
+    INTC2_REGMASK   = $1f
 
 
 dat

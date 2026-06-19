@@ -43,6 +43,14 @@ con
     FONT_ENC_ISO8859_4  = %11
 
 
+    ' interrupts
+    INT_FONTWRITE       = 1 << 0
+    INT_BTE             = 1 << 0
+    INT_BTE_COMPLETE    = 1 << 1
+    INT_TOUCHED         = 1 << 2
+    INT_DMA             = 1 << 3
+    INT_KEYSCAN         = 1 << 4
+
     REDMASK     = $f800
     GREENMASK   = $07e0
     BLUEMASK    = $001f
@@ -440,6 +448,49 @@ pub gpiox_state(s)
     writereg(core.GPIOX, (s <> 0) & 1)
 
 
+pub int_clear(m)
+' Clear interrupt(s)
+'   m:
+'       INT_FONTWRITE (1):      font character write to DDRAM complete
+'                               (valid when BTE disabled, text mode enabled)
+'       INT_BTE (1):            BTE interrupt for MCU R/W
+'                               (valid when BTE enabled and BTE operation initiated)
+
+'       INT_BTE_COMPLETE (2):   BTE process complete
+'       INT_TOUCHED (4):        touchscreen touched
+'       INT_DMA (8):            DMA interrupt
+'       INT_KEYSCAN (16):       keyscan interrupt
+    writereg(core.INTC2, m & core.INTC2_REGMASK)
+
+
+pub int_mask(m)
+' Set interrupt mask
+'   m:
+'       INT_FONTWRITE (1):      font character write to DDRAM complete
+'                               (valid when BTE disabled, text mode enabled)
+'       INT_BTE (1):            BTE interrupt for MCU R/W
+'                               (valid when BTE enabled and BTE operation initiated)
+'       INT_BTE_COMPLETE (2):   BTE process complete
+'       INT_TOUCHED (4):        touchscreen touched
+'       INT_DMA (8):            DMA interrupt
+'       INT_KEYSCAN (16):       keyscan interrupt
+    writereg(core.INTC1, m & core.INTC1_REGMASK)
+
+
+pub interrupt(): i
+' Get interrupt source(s)
+'   Returns:
+'       INT_FONTWRITE (1):      font character write to DDRAM complete
+'                               (valid when BTE disabled, text mode enabled)
+'       INT_BTE (1):            BTE interrupt for MCU R/W
+'                               (valid when BTE enabled and BTE operation initiated)
+'       INT_BTE_COMPLETE (2):   BTE process complete
+'       INT_TOUCHED (4):        touchscreen touched
+'       INT_DMA (8):            DMA interrupt
+'       INT_KEYSCAN (16):       keyscan interrupt
+    return readreg(core.INTC2) & core.INTC2_REGMASK
+
+
 pub line(x1, y1, x2, y2, c)
 ' Draw a line
 '   (x1, y1):   starting coordinates
@@ -746,6 +797,46 @@ pub triangle(x1, y1, x2, y2, x3, y3, c, f=false)
 
     ' Wait for the command to finish
     waitnot(core.DCR, core.LINE_SQU_TRI_BUSY)
+
+
+pub ts_debounce_enabled(e): c
+' Enable touchscreen debounce circuit
+'   e:
+'       true (-1 or 1)
+'       false (0)
+'       other values:   return the current setting
+    c := readreg(core.TPCR1)
+    case abs(e)
+        0, 1:
+            e := (c & core.TPDCETPI_MASK) | ( (e & 1) << core.TPDCETPI)
+            writereg(core.TPCR1, e)
+        other:
+            return ( (c >> core.TPDCETPI) & 1) == 1
+
+
+pub ts_enabled(e): c
+' Enable touchscreen
+'   e:
+'       true (-1 or 1)
+'       false (0)
+'       other values:   return the current setting
+    c := readreg(core.TPCR0)
+    case abs(e)
+        0, 1:
+            e := (c & core.TPEN_MASK) | ( (e & 1) << core.TPEN)
+            writereg(core.TPCR0, e)
+        other:
+            return ( (c >> core.TPEN) & 1) == 1
+
+
+pub ts_xy(): t | x, y   'xxx api tentative
+' Get current touchscreen coordinates
+'   Returns:
+'       [b25..16]:  x coordinate (ADC word, u10)
+'       [b9..0]:    y coordinate (ADC word, u10)
+    x := (readreg(core.TPXH) << 2) | (readreg(core.TPXYL) & core.TPXLSB_BITS)
+    y := (readreg(core.TPYH) << 2) | (readreg(core.TPXYL) >> core.TPYLSB) & core.TPYLSB_BITS
+    return (x << 16) | y
 
 
 pri busy(): s
