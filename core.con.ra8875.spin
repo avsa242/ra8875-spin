@@ -25,6 +25,7 @@ con
     DEV_ID          = $00
 
     PWRR            = $01
+    PWRR_REGMASK    = $83
         LCDDISPOFF  = 7
         SLEEPMODE   = 1
         SWRESET     = 0
@@ -32,6 +33,8 @@ con
         DISP_ON     = 1 << LCDDISPOFF
         DISP_NORMAL = 0
         DISP_SLEEP  = 1 << SLEEPMODE
+        SOFT_RESET  = 1 << SWRESET
+        SOFT_RESET_CLR  = 0
 
     MRWC            = $02
     PCSR            = $04

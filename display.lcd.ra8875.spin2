@@ -490,6 +490,11 @@ pub reset()
         waitms(100)
         pinh(_RST)
         waitms(100)
+    else
+        writereg(core.PWRR, core.SOFT_RESET)
+        waitms(100)
+        writereg(core.PWRR, core.SOFT_RESET_CLR)
+        waitms(100)
 
 
 pub scroll_left(px)
@@ -551,7 +556,6 @@ pub set_scroll_area(sx, sy, ex, ey)
     writedata(ey.byte[0])
     writecmd(core.VESW1)
     writedata(ey.byte[1] & %1)
-
 
 
 pub set_xy(x1, y1, x2=-1, y2=-1)
