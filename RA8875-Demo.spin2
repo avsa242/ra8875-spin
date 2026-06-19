@@ -4,7 +4,7 @@
     Description:    Demo of the RA8875 driver
     Author:         Jesse Burt
     Started:        May 16, 2026
-    Updated:        Jun 18, 2026
+    Updated:        Jun 19, 2026
     Copyright (c) 2026 - See end of file for terms of use.
 ----------------------------------------------------------------------------------------------------
 }
@@ -43,12 +43,12 @@ pub main()
 pub random_shapes() | x1, y1, x2, y2, x3, y3, c
 
     repeat
-        x1 := getrnd() +// 800
-        y1 := getrnd() +// 480
-        x2 := getrnd() +// 800
-        y2 := getrnd() +// 480
-        x3 := getrnd() +// 800
-        y3 := getrnd() +// 480
+        x1 := getrnd() +// disp._disp_width
+        y1 := getrnd() +// disp._disp_height
+        x2 := getrnd() +// disp._disp_width
+        y2 := getrnd() +// disp._disp_height
+        x3 := getrnd() +// disp._disp_width
+        y3 := getrnd() +// disp._disp_height
         c := getrnd() +// $ffff
         disp.box(x1, y1, x2, y2, c, true)
 '        disp.box_rounded(x1, y1, x2, y2, getrnd() +// 256, getrnd() +// 256, c, true)
@@ -75,23 +75,23 @@ pub text(reps) | s, e
 pub color_bars() | r, g, b, x
 
     r := 0
-    repeat 800 with x
+    repeat disp._disp_width with x
         disp.line(x, 0, x, 59, r << 11)
         r := x/25
 
     g := 0
-    repeat 800 with x '797
+    repeat disp._disp_width with x '797
         disp.line(x, 60, x, 119, g << 5)
         g := (x * 1_00) / 12_50 ' x / 12.5
 
     b := 0
-    repeat 800 with x
+    repeat disp._disp_width with x
         disp.line(x, 120, x, 179, b)
         b := x/25
 
     g := 0
     b := 0
-    repeat 800 with x   ' 797
+    repeat disp._disp_width with x   ' 797
         disp.box(x, 180, x, 239, (g << 5) | b, true)
         g := (x * 1_00) / 12_50
         b := x/25
@@ -99,14 +99,14 @@ pub color_bars() | r, g, b, x
 
     r := 0
     b := 0
-    repeat 800 with x
+    repeat disp._disp_width with x
         disp.box(x, 240, x, 299, (r << 11) | b, true)
         r := x/25
         b := x/25
 
     r := 0
     g := 0
-    repeat 800 with x
+    repeat disp._disp_width with x
         disp.box(x, 300, x, 359, (r << 11) | (g << 5), true)
         r := x/25
         g := (x * 1_00) / 12_50
