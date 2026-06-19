@@ -93,6 +93,13 @@ con
         VSYNC_POL_HIGH  = 1 << VSYNC_POL
 
     DPCR            = $20
+    DPCR_REGMASK    = $8c
+        LAYER_CTRL          = 7
+        HDIR                = 3
+        VDIR                = 2
+        LAYER_CTRL_MASK     = (1 << LAYER_CTRL) ^ DPCR_REGMASK
+        HDIR_MASK           = (1 << HDIR) ^ DPCR_REGMASK
+        VDIR_MASK           = (1 << VDIR) ^ DPCR_REGMASK
 
     FNCR0                   = $21
     FNCR0_REGMASK           = $a3

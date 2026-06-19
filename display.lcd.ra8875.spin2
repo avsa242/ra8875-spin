@@ -397,6 +397,36 @@ pub line(x1, y1, x2, y2, c)
     waitnot(core.DCR, core.LINE_SQU_TRI_BUSY)
 
 
+pub mirror_h(m=-2): c
+' Mirror the display horizontally
+'   m:
+'       true (-1 or 1): mirror the display
+'       false (0):      no mirroring
+'       other values:   return the current setting
+    c := readreg(core.DPCR)
+    case abs(m)
+        0, 1:
+            c := (c & core.HDIR_MASK) | ( (m & 1) << core.HDIR)
+            writereg(core.DPCR, c)
+        other:
+            return ( (c >> core.HDIR) & 1 ) == 1
+
+
+pub mirror_v(m=-2): c
+' Mirror the display vertically
+'   m:
+'       true (-1 or 1): mirror the display
+'       false (0):      no mirroring
+'       other values:   return the current setting
+    c := readreg(core.DPCR)
+    case abs(m)
+        0, 1:
+            c := (c & core.VDIR_MASK) | ( (m & 1) << core.VDIR)
+            writereg(core.DPCR, c)
+        other:
+            return ( (c >> core.VDIR) & 1 ) == 1
+
+
 pub opmode(m): c
 ' Set display operating mode
 '   m:
