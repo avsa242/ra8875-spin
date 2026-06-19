@@ -114,9 +114,186 @@ pub startx(CS_PIN, SCK_PIN, MOSI_PIN, MISO_PIN, SCK_HZ, RST_PIN, LITE_PIN, WAIT_
     return false
 
 
+pub preset_adafruit_480x80()
+' Preset:
+'   480x80 (3.8" panel)
+'   1kHz backlight PWM freq
+    _disp_width := 480
+    _disp_height := 80
+    _pixclk := core.PCLK_RISING | core.PCLK_PERIOD_4CLK
+    _hsync_nondisp := 10
+    _hsync_start := 8
+    _hsync_pw := 48
+    _hsync_finetune := 0
+    _vsync_nondisp := 3
+    _vsync_start := 8
+    _vsync_pw := 10
+    _voffset := 192
+
+    _bl_pwm_freq := 1000
+
+    writereg(core.PCSR, _pixclk)
+    waitms(1)
+
+    ' horizontal settings
+    writereg(core.HDWR, (_disp_width / 8) - 1)                      ' H width: (HDWR + 1) * 8 = 480
+    writereg(core.HNDFTR, core.DE_HIGH + _hsync_finetune)
+    writereg(core.HNDR, (_hsync_nondisp - _hsync_finetune - 2) / 8) ' H non-display: HNDR * 8 + HNDFTR + 2 = 10
+    writereg(core.HSTR, _hsync_start / 8 - 1)                       ' Hsync start: (HSTR + 1)*8
+    writereg(core.HPWR, core.HSYNC_POL_LOW + (_hsync_pw / 8 - 1))   ' HSync pulse width = (HPWR+1) * 8
+
+    ' vertical settings
+    writereg(core.VDHR0, (_disp_height - 1 + _voffset) & $ff)
+    writereg(core.VDHR1, (_disp_height - 1 + _voffset) >> 8)
+    writereg(core.VNDR0, _vsync_nondisp - 1)                        ' V non-display period = VNDR + 1
+    writereg(core.VNDR1, _vsync_nondisp >> 8)
+    writereg(core.VSTR0, _vsync_start - 1)                          ' Vsync start position = VSTR + 1
+    writereg(core.VSTR1, _vsync_start >> 8)
+    writereg(core.VPWR, core.VSYNC_POL_LOW + _vsync_pw - 1)         ' Vsync pulse width = VPWR + 1
+
+    ' set active window x
+    writereg(core.HSAW0, 0)                                         ' horizontal start point
+    writereg(core.HSAW1, 0)
+    writereg(core.HEAW0, (_disp_width - 1) & $ff)                   ' horizontal end point
+    writereg(core.HEAW1, (_disp_width - 1) >> 8)
+
+    ' set active window y
+    writereg(core.VSAW0, 0 + _voffset)                              ' vertical start point
+    writereg(core.VSAW1, 0 + _voffset)
+    writereg(core.VEAW0, (_disp_height - 1 + _voffset) & $ff)       ' vertical end point
+    writereg(core.VEAW1, (_disp_height - 1 + _voffset) >> 8)
+
+    ' clear window
+    writereg(core.MCLR, core.MCLR_START | core.MCLR_FULL)
+    waitms(500)
+
+    powered(true)
+    gpiox_state(1)
+    pwm1_config(true, core.PWM1_SYSCLK1024)
+    pwm1_duty(255)
+
+
+pub preset_adafruit_480x128()
+' Preset:
+'   480x128 (3.9" panel)
+'   1kHz backlight PWM freq
+    _disp_width := 480
+    _disp_height := 128
+    _pixclk := core.PCLK_RISING | core.PCLK_PERIOD_4CLK
+    _hsync_nondisp := 10
+    _hsync_start := 8
+    _hsync_pw := 48
+    _hsync_finetune := 0
+    _vsync_nondisp := 33
+    _vsync_start := 8
+    _vsync_pw := 10
+    _voffset := 0
+
+    _bl_pwm_freq := 1000
+
+    writereg(core.PCSR, _pixclk)
+    waitms(1)
+
+    ' horizontal settings
+    writereg(core.HDWR, (_disp_width / 8) - 1)                      ' H width: (HDWR + 1) * 8 = 480
+    writereg(core.HNDFTR, core.DE_HIGH + _hsync_finetune)
+    writereg(core.HNDR, (_hsync_nondisp - _hsync_finetune - 2) / 8) ' H non-display: HNDR * 8 + HNDFTR + 2 = 10
+    writereg(core.HSTR, _hsync_start / 8 - 1)                       ' Hsync start: (HSTR + 1)*8
+    writereg(core.HPWR, core.HSYNC_POL_LOW + (_hsync_pw / 8 - 1))   ' HSync pulse width = (HPWR+1) * 8
+
+    ' vertical settings
+    writereg(core.VDHR0, (_disp_height - 1 + _voffset) & $ff)
+    writereg(core.VDHR1, (_disp_height - 1 + _voffset) >> 8)
+    writereg(core.VNDR0, _vsync_nondisp - 1)                        ' V non-display period = VNDR + 1
+    writereg(core.VNDR1, _vsync_nondisp >> 8)
+    writereg(core.VSTR0, _vsync_start - 1)                          ' Vsync start position = VSTR + 1
+    writereg(core.VSTR1, _vsync_start >> 8)
+    writereg(core.VPWR, core.VSYNC_POL_LOW + _vsync_pw - 1)         ' Vsync pulse width = VPWR + 1
+
+    ' set active window x
+    writereg(core.HSAW0, 0)                                         ' horizontal start point
+    writereg(core.HSAW1, 0)
+    writereg(core.HEAW0, (_disp_width - 1) & $ff)                   ' horizontal end point
+    writereg(core.HEAW1, (_disp_width - 1) >> 8)
+
+    ' set active window y
+    writereg(core.VSAW0, 0 + _voffset)                              ' vertical start point
+    writereg(core.VSAW1, 0 + _voffset)
+    writereg(core.VEAW0, (_disp_height - 1 + _voffset) & $ff)       ' vertical end point
+    writereg(core.VEAW1, (_disp_height - 1 + _voffset) >> 8)
+
+    ' clear window
+    writereg(core.MCLR, core.MCLR_START | core.MCLR_FULL)
+    waitms(500)
+
+    powered(true)
+    gpiox_state(1)
+    pwm1_config(true, core.PWM1_SYSCLK1024)
+    pwm1_duty(255)
+
+
+pub preset_adafruit_480x272()
+' Preset:
+'   480x272 (4.3" panel w/resistive touchscreen, Adafruit PN 1591)
+'   1kHz backlight PWM freq
+    _disp_width := 480
+    _disp_height := 272
+    _pixclk := core.PCLK_RISING | core.PCLK_PERIOD_4CLK
+    _hsync_nondisp := 10
+    _hsync_start := 8
+    _hsync_pw := 48
+    _hsync_finetune := 0
+    _vsync_nondisp := 3
+    _vsync_start := 8
+    _vsync_pw := 10
+    _voffset := 0
+
+    _bl_pwm_freq := 1000
+
+    writereg(core.PCSR, _pixclk)
+    waitms(1)
+
+    ' horizontal settings
+    writereg(core.HDWR, (_disp_width / 8) - 1)                      ' H width: (HDWR + 1) * 8 = 480
+    writereg(core.HNDFTR, core.DE_HIGH + _hsync_finetune)
+    writereg(core.HNDR, (_hsync_nondisp - _hsync_finetune - 2) / 8) ' H non-display: HNDR * 8 + HNDFTR + 2 = 10
+    writereg(core.HSTR, _hsync_start / 8 - 1)                       ' Hsync start: (HSTR + 1)*8
+    writereg(core.HPWR, core.HSYNC_POL_LOW + (_hsync_pw / 8 - 1))   ' HSync pulse width = (HPWR+1) * 8
+
+    ' vertical settings
+    writereg(core.VDHR0, (_disp_height - 1 + _voffset) & $ff)
+    writereg(core.VDHR1, (_disp_height - 1 + _voffset) >> 8)
+    writereg(core.VNDR0, _vsync_nondisp - 1)                        ' V non-display period = VNDR + 1
+    writereg(core.VNDR1, _vsync_nondisp >> 8)
+    writereg(core.VSTR0, _vsync_start - 1)                          ' Vsync start position = VSTR + 1
+    writereg(core.VSTR1, _vsync_start >> 8)
+    writereg(core.VPWR, core.VSYNC_POL_LOW + _vsync_pw - 1)         ' Vsync pulse width = VPWR + 1
+
+    ' set active window x
+    writereg(core.HSAW0, 0)                                         ' horizontal start point
+    writereg(core.HSAW1, 0)
+    writereg(core.HEAW0, (_disp_width - 1) & $ff)                   ' horizontal end point
+    writereg(core.HEAW1, (_disp_width - 1) >> 8)
+
+    ' set active window y
+    writereg(core.VSAW0, 0 + _voffset)                              ' vertical start point
+    writereg(core.VSAW1, 0 + _voffset)
+    writereg(core.VEAW0, (_disp_height - 1 + _voffset) & $ff)       ' vertical end point
+    writereg(core.VEAW1, (_disp_height - 1 + _voffset) >> 8)
+
+    ' clear window
+    writereg(core.MCLR, core.MCLR_START | core.MCLR_FULL)
+    waitms(500)
+
+    powered(true)
+    gpiox_state(1)
+    pwm1_config(true, core.PWM1_SYSCLK1024)
+    pwm1_duty(255)
+
+
 pub preset_adafruit_800x480()
 ' Preset:
-'   800x480 (5.0" panel w/resistive touchscreen, Adafruit PN 1596)
+'   800x480 (5.0" or 7.0" panel w/resistive touchscreen, Adafruit PNs 1596, 1680, 2353, 2354)
 '   1kHz backlight PWM freq
     _disp_width := 800
     _disp_height := 480
