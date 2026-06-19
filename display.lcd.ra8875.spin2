@@ -132,36 +132,7 @@ pub preset_adafruit_480x80()
 
     _bl_pwm_freq := 1000
 
-    writereg(core.PCSR, _pixclk)
-    waitms(1)
-
-    ' horizontal settings
-    writereg(core.HDWR, (_disp_width / 8) - 1)                      ' H width: (HDWR + 1) * 8 = 480
-    writereg(core.HNDFTR, core.DE_HIGH + _hsync_finetune)
-    writereg(core.HNDR, (_hsync_nondisp - _hsync_finetune - 2) / 8) ' H non-display: HNDR * 8 + HNDFTR + 2 = 10
-    writereg(core.HSTR, _hsync_start / 8 - 1)                       ' Hsync start: (HSTR + 1)*8
-    writereg(core.HPWR, core.HSYNC_POL_LOW + (_hsync_pw / 8 - 1))   ' HSync pulse width = (HPWR+1) * 8
-
-    ' vertical settings
-    writereg(core.VDHR0, (_disp_height - 1 + _voffset) & $ff)
-    writereg(core.VDHR1, (_disp_height - 1 + _voffset) >> 8)
-    writereg(core.VNDR0, _vsync_nondisp - 1)                        ' V non-display period = VNDR + 1
-    writereg(core.VNDR1, _vsync_nondisp >> 8)
-    writereg(core.VSTR0, _vsync_start - 1)                          ' Vsync start position = VSTR + 1
-    writereg(core.VSTR1, _vsync_start >> 8)
-    writereg(core.VPWR, core.VSYNC_POL_LOW + _vsync_pw - 1)         ' Vsync pulse width = VPWR + 1
-
-    ' set active window x
-    writereg(core.HSAW0, 0)                                         ' horizontal start point
-    writereg(core.HSAW1, 0)
-    writereg(core.HEAW0, (_disp_width - 1) & $ff)                   ' horizontal end point
-    writereg(core.HEAW1, (_disp_width - 1) >> 8)
-
-    ' set active window y
-    writereg(core.VSAW0, 0 + _voffset)                              ' vertical start point
-    writereg(core.VSAW1, 0 + _voffset)
-    writereg(core.VEAW0, (_disp_height - 1 + _voffset) & $ff)       ' vertical end point
-    writereg(core.VEAW1, (_disp_height - 1 + _voffset) >> 8)
+    set_timings()
 
     ' clear window
     writereg(core.MCLR, core.MCLR_START | core.MCLR_FULL)
@@ -191,36 +162,7 @@ pub preset_adafruit_480x128()
 
     _bl_pwm_freq := 1000
 
-    writereg(core.PCSR, _pixclk)
-    waitms(1)
-
-    ' horizontal settings
-    writereg(core.HDWR, (_disp_width / 8) - 1)                      ' H width: (HDWR + 1) * 8 = 480
-    writereg(core.HNDFTR, core.DE_HIGH + _hsync_finetune)
-    writereg(core.HNDR, (_hsync_nondisp - _hsync_finetune - 2) / 8) ' H non-display: HNDR * 8 + HNDFTR + 2 = 10
-    writereg(core.HSTR, _hsync_start / 8 - 1)                       ' Hsync start: (HSTR + 1)*8
-    writereg(core.HPWR, core.HSYNC_POL_LOW + (_hsync_pw / 8 - 1))   ' HSync pulse width = (HPWR+1) * 8
-
-    ' vertical settings
-    writereg(core.VDHR0, (_disp_height - 1 + _voffset) & $ff)
-    writereg(core.VDHR1, (_disp_height - 1 + _voffset) >> 8)
-    writereg(core.VNDR0, _vsync_nondisp - 1)                        ' V non-display period = VNDR + 1
-    writereg(core.VNDR1, _vsync_nondisp >> 8)
-    writereg(core.VSTR0, _vsync_start - 1)                          ' Vsync start position = VSTR + 1
-    writereg(core.VSTR1, _vsync_start >> 8)
-    writereg(core.VPWR, core.VSYNC_POL_LOW + _vsync_pw - 1)         ' Vsync pulse width = VPWR + 1
-
-    ' set active window x
-    writereg(core.HSAW0, 0)                                         ' horizontal start point
-    writereg(core.HSAW1, 0)
-    writereg(core.HEAW0, (_disp_width - 1) & $ff)                   ' horizontal end point
-    writereg(core.HEAW1, (_disp_width - 1) >> 8)
-
-    ' set active window y
-    writereg(core.VSAW0, 0 + _voffset)                              ' vertical start point
-    writereg(core.VSAW1, 0 + _voffset)
-    writereg(core.VEAW0, (_disp_height - 1 + _voffset) & $ff)       ' vertical end point
-    writereg(core.VEAW1, (_disp_height - 1 + _voffset) >> 8)
+    set_timings()
 
     ' clear window
     writereg(core.MCLR, core.MCLR_START | core.MCLR_FULL)
@@ -250,36 +192,7 @@ pub preset_adafruit_480x272()
 
     _bl_pwm_freq := 1000
 
-    writereg(core.PCSR, _pixclk)
-    waitms(1)
-
-    ' horizontal settings
-    writereg(core.HDWR, (_disp_width / 8) - 1)                      ' H width: (HDWR + 1) * 8 = 480
-    writereg(core.HNDFTR, core.DE_HIGH + _hsync_finetune)
-    writereg(core.HNDR, (_hsync_nondisp - _hsync_finetune - 2) / 8) ' H non-display: HNDR * 8 + HNDFTR + 2 = 10
-    writereg(core.HSTR, _hsync_start / 8 - 1)                       ' Hsync start: (HSTR + 1)*8
-    writereg(core.HPWR, core.HSYNC_POL_LOW + (_hsync_pw / 8 - 1))   ' HSync pulse width = (HPWR+1) * 8
-
-    ' vertical settings
-    writereg(core.VDHR0, (_disp_height - 1 + _voffset) & $ff)
-    writereg(core.VDHR1, (_disp_height - 1 + _voffset) >> 8)
-    writereg(core.VNDR0, _vsync_nondisp - 1)                        ' V non-display period = VNDR + 1
-    writereg(core.VNDR1, _vsync_nondisp >> 8)
-    writereg(core.VSTR0, _vsync_start - 1)                          ' Vsync start position = VSTR + 1
-    writereg(core.VSTR1, _vsync_start >> 8)
-    writereg(core.VPWR, core.VSYNC_POL_LOW + _vsync_pw - 1)         ' Vsync pulse width = VPWR + 1
-
-    ' set active window x
-    writereg(core.HSAW0, 0)                                         ' horizontal start point
-    writereg(core.HSAW1, 0)
-    writereg(core.HEAW0, (_disp_width - 1) & $ff)                   ' horizontal end point
-    writereg(core.HEAW1, (_disp_width - 1) >> 8)
-
-    ' set active window y
-    writereg(core.VSAW0, 0 + _voffset)                              ' vertical start point
-    writereg(core.VSAW1, 0 + _voffset)
-    writereg(core.VEAW0, (_disp_height - 1 + _voffset) & $ff)       ' vertical end point
-    writereg(core.VEAW1, (_disp_height - 1 + _voffset) >> 8)
+    set_timings()
 
     ' clear window
     writereg(core.MCLR, core.MCLR_START | core.MCLR_FULL)
@@ -309,36 +222,7 @@ pub preset_adafruit_800x480()
 
     _bl_pwm_freq := 1000
 
-    writereg(core.PCSR, _pixclk)
-    waitms(1)
-
-    ' horizontal settings
-    writereg(core.HDWR, (_disp_width / 8) - 1)                      ' H width: (HDWR + 1) * 8 = 480
-    writereg(core.HNDFTR, core.DE_HIGH + _hsync_finetune)
-    writereg(core.HNDR, (_hsync_nondisp - _hsync_finetune - 2) / 8) ' H non-display: HNDR * 8 + HNDFTR + 2 = 10
-    writereg(core.HSTR, _hsync_start / 8 - 1)                       ' Hsync start: (HSTR + 1)*8
-    writereg(core.HPWR, core.HSYNC_POL_LOW + (_hsync_pw / 8 - 1))   ' HSync pulse width = (HPWR+1) * 8
-
-    ' vertical settings
-    writereg(core.VDHR0, (_disp_height - 1 + _voffset) & $ff)
-    writereg(core.VDHR1, (_disp_height - 1 + _voffset) >> 8)
-    writereg(core.VNDR0, _vsync_nondisp - 1)                        ' V non-display period = VNDR + 1
-    writereg(core.VNDR1, _vsync_nondisp >> 8)
-    writereg(core.VSTR0, _vsync_start - 1)                          ' Vsync start position = VSTR + 1
-    writereg(core.VSTR1, _vsync_start >> 8)
-    writereg(core.VPWR, core.VSYNC_POL_LOW + _vsync_pw - 1)         ' Vsync pulse width = VPWR + 1
-
-    ' set active window x
-    writereg(core.HSAW0, 0)                                         ' horizontal start point
-    writereg(core.HSAW1, 0)
-    writereg(core.HEAW0, (_disp_width - 1) & $ff)                   ' horizontal end point
-    writereg(core.HEAW1, (_disp_width - 1) >> 8)
-
-    ' set active window y
-    writereg(core.VSAW0, 0 + _voffset)                              ' vertical start point
-    writereg(core.VSAW1, 0 + _voffset)
-    writereg(core.VEAW0, (_disp_height - 1 + _voffset) & $ff)       ' vertical end point
-    writereg(core.VEAW1, (_disp_height - 1 + _voffset) >> 8)
+    set_timings()
 
     ' clear window
     writereg(core.MCLR, core.MCLR_START | core.MCLR_FULL)
@@ -763,6 +647,40 @@ pub set_scroll_area(sx, sy, ex, ey)
     writedata(ey.byte[0])
     writecmd(core.VESW1)
     writedata(ey.byte[1] & %1)
+
+
+pub set_timings()   'xxx api tentative
+' Set up/configure LCD panel display timings
+    writereg(core.PCSR, _pixclk)
+    waitms(1)
+
+    ' horizontal settings
+    writereg(core.HDWR, (_disp_width / 8) - 1)                      ' H width: (HDWR + 1) * 8
+    writereg(core.HNDFTR, core.DE_HIGH + _hsync_finetune)
+    writereg(core.HNDR, (_hsync_nondisp - _hsync_finetune - 2) / 8) ' H non-display: HNDR * 8 + HNDFTR + 2
+    writereg(core.HSTR, _hsync_start / 8 - 1)                       ' Hsync start: (HSTR + 1)*8
+    writereg(core.HPWR, core.HSYNC_POL_LOW + (_hsync_pw / 8 - 1))   ' HSync pulse width = (HPWR+1) * 8
+
+    ' vertical settings
+    writereg(core.VDHR0, (_disp_height - 1 + _voffset) & $ff)
+    writereg(core.VDHR1, (_disp_height - 1 + _voffset) >> 8)
+    writereg(core.VNDR0, _vsync_nondisp - 1)                        ' V non-display period = VNDR + 1
+    writereg(core.VNDR1, _vsync_nondisp >> 8)
+    writereg(core.VSTR0, _vsync_start - 1)                          ' Vsync start position = VSTR + 1
+    writereg(core.VSTR1, _vsync_start >> 8)
+    writereg(core.VPWR, core.VSYNC_POL_LOW + _vsync_pw - 1)         ' Vsync pulse width = VPWR + 1
+
+    ' set active window x
+    writereg(core.HSAW0, 0)                                         ' horizontal start point
+    writereg(core.HSAW1, 0)
+    writereg(core.HEAW0, (_disp_width - 1) & $ff)                   ' horizontal end point
+    writereg(core.HEAW1, (_disp_width - 1) >> 8)
+
+    ' set active window y
+    writereg(core.VSAW0, 0 + _voffset)                              ' vertical start point
+    writereg(core.VSAW1, 0 + _voffset)
+    writereg(core.VEAW0, (_disp_height - 1 + _voffset) & $ff)       ' vertical end point
+    writereg(core.VEAW1, (_disp_height - 1 + _voffset) >> 8)
 
 
 pub set_xy(x1, y1, x2=-1, y2=-1)
