@@ -19,6 +19,7 @@ This is a P8X32A/Propeller, P2X8C4M64P/Propeller 2 driver object for the RAiO RA
     * font encoding (ISO-8859-1, -2, -3, -4)
     * font scaling (H, V independent at 1..4x)
     * pixel-level cursor control
+    * solid or transparent background
 * Windowing:
     * set drawable area
     * horizontal/vertical scroll

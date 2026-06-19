@@ -4,7 +4,7 @@
     Description:    RA8875-specific constants
     Author:         Jesse Burt
     Started:        May 16, 2026
-    Updated:        May 23, 2026
+    Updated:        Jun 19, 2026
     Copyright (c) 2026 - See end of file for terms of use.
 ----------------------------------------------------------------------------------------------------
 }
@@ -119,6 +119,7 @@ con
         FONT_HSCALE_BITS    = %11
         FONT_VSCALE_BITS    = %11
         FONT_SCALE_BITS     = %1111
+        FONT_TRANSP_MASK    = (1 << FONT_TRANSP) ^ FNCR1_REGMASK
         FONT_HSCALE_MASK    = (FONT_HSCALE_BITS << FONT_HSCALE) ^ FNCR1_REGMASK
         FONT_VSCALE_MASK    = (FONT_VSCALE_BITS << FONT_VSCALE) ^ FNCR1_REGMASK
         FONT_SCALE_MASK     = (FONT_SCALE_BITS << FONT_SCALE) ^ FNCR1_REGMASK

@@ -4,7 +4,7 @@
     Description:    Driver for the RA8875 TFT LCD controller
     Author:         Jesse Burt
     Started:        May 16, 2026
-    Updated:        Jun 18, 2026
+    Updated:        Jun 19, 2026
     Copyright (c) 2026 - See end of file for terms of use.
 ----------------------------------------------------------------------------------------------------
 }
@@ -25,8 +25,13 @@ con
     MAX_COLOR   = 65535
 
 
+    ' operating modes
     OPMODE_GFX          = 0
     OPMODE_TEXT         = core.TEXT_MODE        ' $80
+
+
+    ' text attributes
+    DRAWBG              = 1 << 0
 
     FONT_ROM            = 0
     FONT_RAM            = core.FONT_RAM         ' $80
@@ -251,6 +256,18 @@ pub brightness(b)
                     ( (1_000_000/_bl_pwm_freq) << 16) | ... ' pulse period
                     (clkfreq/1_000_000), ...                ' timing granularity (1uS)
                     b )
+
+
+pub char_attrs(a) | tmp
+' Set text rendering character attributes
+'   DRAWBG (1):     draw background color
+    tmp := readreg(core.FNCR1)
+    tmp &= core.FONT_TRANSP_MASK
+
+    if ( a & DRAWBG )
+        tmp |= 1 << core.FONT_TRANSP
+
+    writereg(core.FNCR1, tmp)
 
 
 pub circle(x, y, r, c, f=false)
