@@ -120,7 +120,7 @@ pub preset_adafruit_480x80()
 '   1kHz backlight PWM freq
     _disp_width := 480
     _disp_height := 80
-    _pixclk := core.PCLK_RISING | core.PCLK_PERIOD_4CLK
+    _pixclk := core.PCLK_FALLING | core.PCLK_PERIOD_4CLK
     _hsync_nondisp := 10
     _hsync_start := 8
     _hsync_pw := 48
@@ -179,7 +179,7 @@ pub preset_adafruit_480x128()
 '   1kHz backlight PWM freq
     _disp_width := 480
     _disp_height := 128
-    _pixclk := core.PCLK_RISING | core.PCLK_PERIOD_4CLK
+    _pixclk := core.PCLK_FALLING | core.PCLK_PERIOD_4CLK
     _hsync_nondisp := 10
     _hsync_start := 8
     _hsync_pw := 48
@@ -238,7 +238,7 @@ pub preset_adafruit_480x272()
 '   1kHz backlight PWM freq
     _disp_width := 480
     _disp_height := 272
-    _pixclk := core.PCLK_RISING | core.PCLK_PERIOD_4CLK
+    _pixclk := core.PCLK_FALLING | core.PCLK_PERIOD_4CLK
     _hsync_nondisp := 10
     _hsync_start := 8
     _hsync_pw := 48
@@ -297,7 +297,7 @@ pub preset_adafruit_800x480()
 '   1kHz backlight PWM freq
     _disp_width := 800
     _disp_height := 480
-    _pixclk := core.PCLK_RISING | core.PCLK_PERIOD_2CLK
+    _pixclk := core.PCLK_FALLING | core.PCLK_PERIOD_2CLK
     _hsync_nondisp := 26
     _hsync_start := 32
     _hsync_pw := 96
